@@ -312,3 +312,4 @@ textarea.short{font-family:var(--f-body); font-size:14.5px}
 
 #w-result{display:grid; gap:18px}
 .st-table tr.nocase th{text-transform:none; letter-spacing:0}
+mark{background:var(--warm-soft); color:var(--ink); padding:0 3px; border-radius:3px}
