@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AmostraLab</title>
+<meta name="description" content="Calculadora de tamanho de amostra com estratificação por província e distrito de Moçambique, aleatorização reprodutível e texto para protocolo. Uma iniciativa da ComuniDados Moz.">
+<meta property="og:title" content="AmostraLab · ComuniDados Moz">
+<meta property="og:description" content="Calcule, estratifique e justifique a amostra do seu estudo em Moçambique.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B7A63'/%3E%3Cpath d='M7 23 L13 14 L18 19 L25 9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><b>Amostra<span>Lab</span></b><small>ComuniDados Moz</small></div>
+    <nav aria-label="Secções"><a href="#calculadora">Calculadora</a><a href="#estratificacao">Estratificação</a><a href="#dados">Dados</a><a href="#aleatorizacao">Aleatorização</a><a href="#fontes">Fontes</a></nav>
+    <span class="tag">Versão beta</span>
+  </header>
+</div>
+
+<div class="hero">
+  <div class="hero-in">
+    <div>
+      <h1>Quantas pessoas precisa o seu estudo?</h1>
+      <p>O AmostraLab calcula o tamanho da amostra, distribui-a pelas províncias e distritos de Moçambique, sorteia unidades de forma reprodutível e escreve a justificação para o protocolo. Os cálculos inspiram-se nos métodos clássicos de amostragem e de avaliação de impacto.</p>
+    </div>
+    <aside class="zcard" aria-label="Valores críticos da normal">
+      <h3>Valores de z usados</h3>
+      <table class="num">
+        <tr><th>Confiança 90% · α = 0,10</th><td>1,645</td></tr>
+        <tr><th>Confiança 95% · α = 0,05</th><td>1,960</td></tr>
+        <tr><th>Confiança 99% · α = 0,01</th><td>2,576</td></tr>
+        <tr><th>Poder 80% · z<sub>β</sub></th><td>0,842</td></tr>
+        <tr><th>Poder 90% · z<sub>β</sub></th><td>1,282</td></tr>
+      </table>
+    </aside>
+  </div>
+</div>
+
+<div class="wrap">
+  <main class="app" id="calculadora">
+    <div class="rail" role="group" aria-label="Tipo de estudo">
+      <div class="lbl">Tipo de estudo</div>
+      <div id="rail" style="display:contents"></div>
+    </div>
+    <div class="panel" id="inputs"></div>
+    <div class="panel res" id="results" aria-live="polite"></div>
+  </main>
+
+  <!-- ===== Estratificação ===== -->
+  <section class="blk" id="estratificacao">
+    <div class="sec-head"><div><span class="kicker">Novo</span><h2>Estratificação por província e distrito</h2>
+      <p>Escolha os estratos, defina a precisão e o método de alocação. A população de cada estrato vem do Censo 2017. Veja quantas entrevistas fazer em cada lugar, a margem de erro que cada estrato consegue e quanto custa o trabalho de campo.</p></div></div>
+    <div class="two">
+      <div class="panel" id="st-inputs">
+        <div class="fields">
+          <div class="field"><label>Nível dos estratos</label><div class="segf" id="st-level"><button type="button" data-v="prov">Províncias</button><button type="button" data-v="dist">Distritos</button></div></div>
+          <div class="field" id="st-prov-wrap"><label for="st-prov">Província</label><div class="ctl"><select id="st-prov"></select></div></div>
+          <div class="field"><label for="st-search">Estratos incluídos</label>
+            <input class="search" id="st-search" type="search" placeholder="Filtrar por nome…" autocomplete="off">
+            <div class="units" id="st-units"></div>
+            <div class="unit-tools"><span id="st-count"></span><span><button type="button" class="link" id="st-all">Todos</button> · <button type="button" class="link" id="st-none">Nenhum</button></span></div>
+          </div>
+          <div class="field"><label>Objectivo de precisão</label><div class="segf" id="st-target"><button type="button" data-v="global">Margem para o total</button><button type="button" data-v="estrato">Margem em cada estrato</button></div>
+            <div class="h" id="st-target-h"></div></div>
+          <div class="field"><label>Método de alocação</label><div class="segf" id="st-alloc"><button type="button" data-v="prop">Proporcional</button><button type="button" data-v="raiz">Raiz quadrada</button><button type="button" data-v="igual">Igual</button><button type="button" data-v="neyman">Neyman</button></div>
+            <div class="h" id="st-alloc-h"></div></div>
+          <div class="row2">
+            <div class="field"><label for="st-p">Prevalência esperada <span class="u">%</span></label><div class="ctl"><input type="number" id="st-p" min="1" max="99" step="1"></div></div>
+            <div class="field"><label for="st-d">Margem de erro (±) <span class="u">p.p.</span></label><div class="ctl"><input type="number" id="st-d" min="0.5" max="20" step="0.5"></div></div>
+            <div class="field"><label for="st-conf">Confiança</label><div class="ctl"><select id="st-conf"><option value="0.9">90%</option><option value="0.95">95%</option><option value="0.99">99%</option></select></div></div>
+            <div class="field"><label for="st-deff">Efeito de desenho <span class="u">deff</span></label><div class="ctl"><input type="number" id="st-deff" min="1" max="6" step="0.1"></div></div>
+            <div class="field"><label for="st-resp">Taxa de resposta <span class="u">%</span></label><div class="ctl"><input type="number" id="st-resp" min="30" max="100" step="1"></div></div>
+            <div class="field"><label for="st-min">Mínimo por estrato <span class="u">entrev.</span></label><div class="ctl"><input type="number" id="st-min" min="0" step="5"></div></div>
+          </div>
+          <div class="field"><label>Orçamento de campo</label>
+            <div class="row2">
+              <div><label for="st-cost" class="note">Custo por entrevista (MT)</label><input type="number" id="st-cost" min="0" step="50" class="search"></div>
+              <div><label for="st-perday" class="note">Entrevistas por inquiridor por dia</label><input type="number" id="st-perday" min="1" step="1" class="search"></div>
+              <div><label for="st-team" class="note">Inquiridores no terreno</label><input type="number" id="st-team" min="1" step="1" class="search"></div>
+            </div></div>
+        </div>
+      </div>
+      <div class="panel res" id="st-results" aria-live="polite"><p class="note">A carregar os dados do Censo 2017…</p></div>
+    </div>
+  </section>
+
+  <!-- ===== Dados ===== -->
+  <section class="blk" id="dados">
+    <div class="sec-head"><div><span class="kicker">Pesquisa rápida</span><h2>Dados provinciais e distritais</h2>
+      <p>Procure qualquer distrito, cidade ou província e veja a população do Censo 2017, o peso na província e no país. Com um clique, o lugar passa a ser um estrato no cálculo acima.</p></div></div>
+    <input class="search" id="q" type="search" placeholder="Ex.: Mogovolas, Zambézia, Beira…" autocomplete="off" aria-label="Pesquisar distrito ou província">
+    <div class="facts" id="q-facts"></div>
+    <div class="res-list" id="q-results"></div>
+    <p class="note" id="q-source"></p>
+  </section>
+
+  <!-- ===== Aleatorização ===== -->
+  <section class="blk" id="aleatorizacao">
+    <div class="sec-head"><div><span class="kicker">Ferramenta</span><h2>Aleatorização reprodutível</h2>
+      <p>Cole a lista de escolas, aldeias ou pessoas e sorteie quem recebe a intervenção. A mesma semente dá sempre o mesmo resultado, por isso o sorteio pode ser repetido e auditado. Se indicar um estrato, o sorteio é feito dentro de cada estrato.</p></div></div>
+    <div class="two">
+      <div class="panel">
+        <div class="fields">
+          <div class="field"><label for="rz-list">Unidades, uma por linha <span class="u">nome ; estrato</span></label><textarea id="rz-list" spellcheck="false"></textarea><div class="h">O estrato é opcional. Separe com ponto e vírgula, vírgula ou tabulação.</div></div>
+          <div class="row2">
+            <div class="field"><label for="rz-seed">Semente</label><div class="ctl"><input type="number" id="rz-seed" step="1"></div></div>
+            <div class="field"><label for="rz-arms">Braços</label><div class="ctl"><select id="rz-arms"><option value="2">Tratamento e controlo</option><option value="3">Dois tratamentos e controlo</option></select></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel res" id="rz-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="blk" id="conceito">
+    <h2>O que torna o AmostraLab diferente</h2>
+    <p class="lead">As calculadoras comuns devolvem um número sem explicar de onde vem. O AmostraLab foi pensado para quem tem de defender esse número perante uma equipa, um doador ou uma comissão de ética.</p>
+    <div class="ideas">
+      <div class="idea"><span class="ix">Cadeia de ajustes</span><h3>Do n₀ ao terreno</h3><p>Cada ajuste aparece em separado: população finita, efeito de desenho, não resposta e atrito. Fica claro quanto cada decisão custa em entrevistas.</p></div>
+      <div class="idea"><span class="ix">Estratificação</span><h3>Moçambique por dentro</h3><p>161 distritos e cidades com a população do Censo 2017. Quatro métodos de alocação, mínimo por estrato e a margem que cada estrato realmente consegue.</p></div>
+      <div class="idea"><span class="ix">Orçamento</span><h3>Quanto custa e quantos dias</h3><p>Com o custo por entrevista e o tamanho da equipa, a plataforma estima o orçamento e os dias de trabalho de campo.</p></div>
+      <div class="idea"><span class="ix">Protocolo</span><h3>Justificação pronta, em PT e EN</h3><p>Gera o parágrafo do cálculo da amostra, da alocação e do sorteio, com os valores usados e as citações, pronto a colar.</p></div>
+      <div class="idea"><span class="ix">Modo inverso</span><h3>Tenho 60 escolas. O que consigo detectar?</h3><p>Quando o orçamento fixa a amostra, calcula o efeito mínimo detectável e compara-o com efeitos típicos em educação.</p></div>
+      <div class="idea"><span class="ix">Transparência</span><h3>Sorteio auditável</h3><p>A aleatorização com semente pública permite que qualquer pessoa repita o sorteio e confirme o resultado.</p></div>
+    </div>
+  </section>
+
+  <section class="blk" id="fontes">
+    <h2>Inspiração, créditos e dados</h2>
+    <div class="inspire">
+      <div>
+        <p>O AmostraLab inspira-se em obras clássicas de amostragem, ensaios clínicos e avaliação de impacto, listadas abaixo. É uma ferramenta de apoio ao planeamento e ao ensino, escrita de raiz pela ComuniDados Moz, e não reproduz nem substitui essas obras.</p>
+        <p>Não temos qualquer ligação aos autores ou às editoras, e citá-los não significa que aprovem esta plataforma. As implementações foram simplificadas e adaptadas por nós: qualquer erro é da nossa responsabilidade, não dos autores que nos inspiraram.</p>
+      </div>
+      <div class="box">
+        <p><b>Antes de usar num estudo real:</b> confirme os parâmetros com dados piloto ou estudos anteriores, consulte as obras originais e, sempre que possível, peça a revisão de um estatístico. Para decisões finais, compare com ferramentas validadas como o PowerUp!, o G*Power ou o pacote <span class="mono">pwr</span> do R.</p>
+        <p style="margin:0"><b>Dados:</b> <span id="src-line">População do IV Recenseamento Geral da População e Habitação 2017 (INE Moçambique).</span></p>
+      </div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Obra que inspirou</th><th>Ideia usada</th><th>Módulos</th></tr></thead><tbody id="libtable"></tbody></table></div>
+  </section>
+
+  <section class="blk" id="glossario">
+    <h2>Glossário</h2>
+    <p class="lead">Os termos que aparecem na plataforma, em linguagem simples.</p>
+    <dl class="gloss">
+      <div><dt>Margem de erro</dt><dd>Quanto a estimativa pode afastar-se do valor real. ±5 p.p. numa prevalência de 40% significa entre 35% e 45%.</dd></div>
+      <div><dt>Efeito de desenho (deff)</dt><dd>Quanto a amostra por conglomerados perde de precisão face a um sorteio simples. Um deff de 2 duplica a amostra necessária.</dd></div>
+      <div><dt>Estrato</dt><dd>Subgrupo da população, como uma província, onde se sorteia em separado. Garante que cada parte do país fica representada.</dd></div>
+      <div><dt>Alocação proporcional</dt><dd>Cada estrato recebe entrevistas na proporção da sua população. Bom para a estimativa nacional, fraco para estratos pequenos.</dd></div>
+      <div><dt>Alocação de Neyman</dt><dd>Dá mais entrevistas aos estratos maiores e mais variáveis. É a alocação mais eficiente quando o custo por entrevista é igual.</dd></div>
+      <div><dt>Alocação pela raiz quadrada</dt><dd>Um compromisso: os estratos pequenos recebem mais do que na proporcional, sem perder muita precisão no total.</dd></div>
+      <div><dt>ICC</dt><dd>Correlação intraclasse: quanto se parecem as pessoas do mesmo grupo. Alunos da mesma escola têm resultados parecidos, por isso cada aluno extra informa menos.</dd></div>
+      <div><dt>Poder estatístico</dt><dd>Probabilidade de o estudo detectar o efeito, se ele existir. O habitual é 80%.</dd></div>
+      <div><dt>MDES</dt><dd>Efeito mínimo detectável: o menor impacto que o estudo consegue distinguir do acaso, em desvios-padrão.</dd></div>
+      <div><dt>Semente</dt><dd>Número que fixa o sorteio aleatório. Com a mesma semente e a mesma lista, o resultado é sempre igual.</dd></div>
+    </dl>
+  </section>
+
+  <section class="blk" id="roteiro">
+    <h2>Roteiro do produto</h2>
+    <p class="lead">O que já existe e o que vem a seguir.</p>
+    <div class="road">
+      <div class="now"><small>Disponível</small><b>Calcular e justificar</b><ul><li>6 módulos clássicos</li><li>Sensibilidade e modo inverso</li><li>Texto para protocolo</li></ul></div>
+      <div class="now"><small>Disponível</small><b>Desenho amostral</b><ul><li>Estratos por província e distrito</li><li>4 métodos de alocação</li><li>Orçamento e sorteio com semente</li></ul></div>
+      <div><small>A seguir</small><b>Do cálculo ao terreno</b><ul><li>Selecção PPS de áreas de enumeração</li><li>Exportar para KoboToolbox e SurveyCTO</li><li>Projecções populacionais do INE</li></ul></div>
+      <div><small>Depois</small><b>Comunidade</b><ul><li>Biblioteca aberta de ICC e deff</li><li>Validação por simulação Monte Carlo</li><li>Projectos guardados em equipa</li></ul></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>AmostraLab · ComuniDados Moz · Código aberto (licença MIT). Ferramenta de apoio ao planeamento e ao ensino: confirme os parâmetros com dados piloto ou estudos anteriores e com um estatístico antes de fixar a amostra.</p>
+  </footer>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
