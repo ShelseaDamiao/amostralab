@@ -149,13 +149,13 @@ function calc(){
       const sw=rows.reduce((s,r)=>s+w(r),0); rows.forEach(r=>{r.nRaw=nD*w(r)/sw;});
     } else rows.forEach(r=>{const a=z*z*r.ph*(1-r.ph)/(d*d);r.nRaw=a/(1+(a-1)/r.Nh)*deff;});
     rows.forEach(r=>{r.ns=Math.min(Math.floor(r.Nh),Math.max(ST.min,1,Math.ceil(r.nRaw)));r.minHit=r.ns>Math.ceil(r.nRaw);
-      r.nField=Math.ceil(r.ns/resp); if(isClu()){r.cl=Math.ceil(r.nField/W.m);r.nField=r.cl*W.m;}
+      r.nField=Math.ceil(r.ns/resp); if(isClu()){r.cl=Math.max(2,Math.ceil(r.nField/W.m));r.minCl=r.cl*W.m>Math.ceil(r.ns/resp)&&Math.ceil(Math.ceil(r.ns/resp)/W.m)<2;r.nField=r.cl*W.m;}
       r.marg=prop?z*Math.sqrt(r.ph*(1-r.ph)*deff/r.ns*Math.max(0,1-r.ns/r.Nh)):null;});
     const V=prop?rows.reduce((s,r)=>s+r.W*r.W*r.ph*(1-r.ph)*deff/r.ns*Math.max(0,1-r.ns/r.Nh),0):0;
     R={...R,rows,net:rows.reduce((s,r)=>s+r.ns,0),field:rows.reduce((s,r)=>s+r.nField,0),overall:prop?z*Math.sqrt(V):null,clusters:isClu()?rows.reduce((s,r)=>s+r.cl,0):null,N:Math.round(Nt)};
   } else {
     let field=Math.ceil(nD/resp), clusters=null;
-    if(isClu()){clusters=Math.ceil(field/W.m);field=clusters*W.m;}
+    if(isClu()){clusters=Math.max(2,Math.ceil(field/W.m));field=clusters*W.m;}
     R={...R,net:Math.ceil(nD),field,clusters,overall:d};
   }
   R.cost=R.field*(W.cost||0); R.enumDays=R.field/(W.perday||1); R.days=Math.ceil(R.enumDays/(W.team||1));
@@ -248,7 +248,7 @@ function renderResult(R){
       ${prop?`<td><input type="number" min="1" max="99" step="1" value="${fmt(r.ph*100)}" data-ph="${esc(r.key)}" aria-label="Prevalência em ${esc(r.n)}"></td>`:''}<td class="num">${fmt(r.ns)}</td><td class="num"><b>${fmt(r.nField)}</b></td>${isClu()?`<td class="num">${fmt(r.cl)}</td>`:''}
       ${prop?`<td class="num${r.marg>0.10?' bad':''}">±${fmt(r.marg*100,1)}<span class="mbar"><i style="width:${Math.min(100,r.marg/0.2*100).toFixed(0)}%"></i></span></td>`:''}</tr>`).join('')}
     </tbody><tfoot><tr><td>Total</td><td class="num">${fmt(R.N)}</td><td class="num">100%</td>${prop?'<td></td>':''}<td class="num">${fmt(R.net)}</td><td class="num">${fmt(R.field)}</td>${isClu()?`<td class="num">${fmt(R.clusters)}</td>`:''}${prop?`<td class="num">±${fmt(R.overall*100,1)}</td>`:''}</tr></tfoot></table></div>
-    ${prop&&W.sub==='sim'&&R.rows.some(r=>r.marg>0.10)?`<div class="warn">${R.rows.filter(r=>r.marg>0.10).length} estrato(s) ficam com margem acima de ±10 p.p. Para estimativas fiáveis em cada estrato, escolha "Margem em cada estrato" no passo 4, a alocação pela raiz quadrada ou aumente o mínimo por estrato.</div>`:''}`;
+    ${isClu()&&R.rows.some(r=>r.minCl)?`<div class="note">Cada estrato recebe pelo menos 2 conglomerados, o mínimo necessário para estimar a variância (Kish, 1965).</div>`:''}${prop&&W.sub==='sim'&&R.rows.some(r=>r.marg>0.10)?`<div class="warn">${R.rows.filter(r=>r.marg>0.10).length} estrato(s) ficam com margem acima de ±10 p.p. Para estimativas fiáveis em cada estrato, escolha "Margem em cada estrato" no passo 4, a alocação pela raiz quadrada ou aumente o mínimo por estrato.</div>`:''}`;
   }
   $('w-result').innerHTML=`
    <div class="kpis" style="margin-bottom:18px">
@@ -310,7 +310,7 @@ function renderSelection(R){
       lines.forEach(x=>{const lo=cum;cum+=x.M;while(j<c&&start+j*I<cum&&start+j*I>=lo){sel.push(x);j++;}});
       const mm=W.design==='multi'?W.m:null;
       tool=`<div class="st-table" style="max-height:320px"><table><thead><tr class="nocase"><th>Área sorteada</th><th>Tamanho (M<sub>i</sub>)</th><th>π₁ = c·M<sub>i</sub>/M</th>${mm?'<th>π₂ = m/M<sub>i</sub></th><th>Peso</th>':''}</tr></thead><tbody>${sel.map(x=>{const p1=Math.min(1,c*x.M/M),p2=mm?Math.min(1,mm/x.M):1;return `<tr><td>${esc(x.name)}${c*x.M>=M?'<span class="tagc">certeza</span>':''}</td><td class="num">${fmt(x.M)}</td><td class="num">${fmt(p1,4)}</td>${mm?`<td class="num">${fmt(p2,4)}</td><td class="num">${fmt(1/(p1*p2),1)}</td>`:''}</tr>`;}).join('')}</tbody></table></div>
-      <p class="note">Total M = ${fmt(M)} unidades · intervalo I = M / c = ${fmt(I,2)} · início aleatório = ${fmt(start,2)} (semente ${W.seed}).${mm?` Com PPS e ${mm} unidades fixas por área, o peso é igual em todas as áreas, M/(c·m) = ${fmt(M/(c*mm),1)}: a amostra é autoponderada dentro do estrato.`:''}</p>`;
+      <p class="note">${sel.some(x=>c*x.M>=M)?'Há áreas maiores do que o intervalo I: devem ser incluídas com certeza (π₁ = 1), retiradas da lista, e o sorteio repetido com as restantes. ':''}Total M = ${fmt(M)} unidades · intervalo I = M / c = ${fmt(I,2)} · início aleatório = ${fmt(start,2)} (semente ${W.seed}).${mm?` Com PPS e ${mm} unidades fixas por área, o peso é igual em todas as áreas, M/(c·m) = ${fmt(M/(c*mm),1)}: a amostra é autoponderada dentro do estrato.`:''}</p>`;
     }
     h+=`<ol class="proc">
       <li><b>1.ª etapa: áreas.</b> ${R.rows?`Em cada um dos ${R.rows.length} estratos, sorteie o número de conglomerados da coluna "Conglom."`:`Sorteie ${fmt(R.clusters)} conglomerados`} ${W.design==='multi'?'com probabilidade proporcional ao tamanho (PPS sistemática), usando o tamanho de cada área.':'por aleatória simples a partir da lista de conglomerados.'}</li>
