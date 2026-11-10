@@ -389,113 +389,8 @@ fetch('data/mz-censo-2017.json').then(r=>r.json()).then(d=>{
   DATA.provPop={}; d.provinces.forEach(p=>DATA.provPop[p.n]=p.pop);
   $('src-line').innerHTML=`${esc(d.source)}. Data do censo: 1 de Agosto de 2017. ${esc(d.note)} <a href="${d.sourceUrl}" target="_blank" rel="noopener">Ver fonte</a>.`;
   $('q-source').innerHTML=`Fonte: ${esc(d.source)}. ${esc(d.note)}`;
-  initStrata(); initSearch();
-}).catch(()=>{$('st-results').innerHTML='<div class="warn">Não foi possível carregar os dados do Censo 2017. Recarregue a página.</div>';});
-
-/* ================= stratification ================= */
-const ST={level:'prov',prov:'Nampula',sel:new Set(),pH:{},p:50,d:5,conf:0.95,deff:2,resp:90,min:30,target:'global',alloc:'prop',cost:1200,perday:6,team:12,filter:'',lang:'pt'};
-const keyOf=u=>u.kind+':'+u.p+'|'+u.n;
-function unitsInView(){
-  if(ST.level==='prov') return DATA.provinces.map(p=>({kind:'P',p:p.n,n:p.n,pop:p.pop}));
-  return DATA.districts.filter(x=>ST.prov==='*'||x.p===ST.prov).map(x=>({kind:'D',p:x.p,n:x.n,pop:x.pop,city:x.city,from:x.from}));
-}
-function selectAllInView(){ST.sel=new Set(unitsInView().map(keyOf));}
-const ALLOC_H={prop:'Cada estrato recebe entrevistas na proporção da população. Óptima para o total nacional.',raiz:'Proporcional à raiz quadrada da população (Kish). Reforça os estratos pequenos com pouca perda no total.',igual:'O mesmo número em todos os estratos. Bom para comparar estratos entre si.',neyman:'Proporcional à população × desvio-padrão do estrato (Neyman). Edite a prevalência esperada de cada estrato na tabela.'};
-const TARGET_H={global:'Calcula a amostra para a margem pedida no total e distribui-a pelos estratos.',estrato:'Cada estrato recebe a amostra necessária para ter, sozinho, a margem pedida. A amostra total cresce muito.'};
-
-function initStrata(){
-  $('st-prov').innerHTML=`<option value="*">Todas as províncias (161 unidades)</option>`+DATA.provinces.map(p=>`<option value="${esc(p.n)}">${esc(p.n)}</option>`).join('');
-  [['st-p','p'],['st-d','d'],['st-deff','deff'],['st-resp','resp'],['st-min','min'],['st-cost','cost'],['st-perday','perday'],['st-team','team']].forEach(([id,k])=>{const el=$(id);el.value=ST[k];el.addEventListener('input',()=>{ST[k]=parseFloat(el.value);calcStrata();});});
-  $('st-conf').value=String(ST.conf); $('st-conf').addEventListener('change',e=>{ST.conf=+e.target.value;calcStrata();});
-  $('st-prov').value=ST.prov; $('st-prov').addEventListener('change',e=>{ST.prov=e.target.value;selectAllInView();renderUnits();calcStrata();});
-  const seg=(id,k,after)=>{$(id).querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ST[k]=b.dataset.v;if(after)after();syncSeg();calcStrata();}));};
-  seg('st-level','level',()=>{selectAllInView();renderUnits();});
-  seg('st-target','target'); seg('st-alloc','alloc');
-  $('st-search').addEventListener('input',e=>{ST.filter=e.target.value;renderUnits();});
-  $('st-all').addEventListener('click',()=>{filteredUnits().forEach(u=>ST.sel.add(keyOf(u)));renderUnits();calcStrata();});
-  $('st-none').addEventListener('click',()=>{filteredUnits().forEach(u=>ST.sel.delete(keyOf(u)));renderUnits();calcStrata();});
-  selectAllInView(); syncSeg(); renderUnits(); calcStrata();
-}
-function syncSeg(){
-  [['st-level','level'],['st-target','target'],['st-alloc','alloc']].forEach(([id,k])=>$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===ST[k]))));
-  $('st-prov-wrap').hidden=ST.level!=='dist'; $('st-prov').value=ST.prov;
-  $('st-alloc-h').textContent=ALLOC_H[ST.alloc]; $('st-target-h').textContent=TARGET_H[ST.target];
-  $('st-alloc').style.opacity=ST.target==='estrato'?.45:1;
-}
-function filteredUnits(){const f=norm(ST.filter.trim());return unitsInView().filter(u=>!f||norm(u.n).includes(f)||norm(u.p).includes(f));}
-function renderUnits(){
-  const us=filteredUnits(), all=unitsInView();
-  $('st-units').innerHTML=us.length?us.map(u=>{const k=keyOf(u);return `<label><span><input type="checkbox" data-key="${esc(k)}"${ST.sel.has(k)?' checked':''}>${esc(u.n)}${ST.level==='dist'&&ST.prov==='*'?`<span class="tagc">${esc(u.p)}</span>`:''}</span><span class="pp">${fmt(u.pop)}</span></label>`;}).join(''):'<p class="note" style="padding:8px 10px;margin:0">Nenhuma unidade com esse nome.</p>';
-  $('st-units').querySelectorAll('input').forEach(c=>c.addEventListener('change',()=>{c.checked?ST.sel.add(c.dataset.key):ST.sel.delete(c.dataset.key);updateCount();calcStrata();}));
-  updateCount();
-  function updateCount(){const n=all.filter(u=>ST.sel.has(keyOf(u))).length;$('st-count').textContent=`${n} de ${all.length} seleccionados`;}
-}
-
-function stratCompute(){
-  const units=unitsInView().filter(u=>ST.sel.has(keyOf(u)));
-  if(!units.length) return {error:'Seleccione pelo menos um estrato.'};
-  if([ST.p,ST.d,ST.deff,ST.resp,ST.min].some(x=>isNaN(x))||ST.d<=0) return {error:'Preencha os parâmetros com números válidos.'};
-  const z=normInv(1-(1-ST.conf)/2), d=ST.d/100, N=units.reduce((s,u)=>s+u.pop,0), resp=ST.resp/100;
-  const rows=units.map(u=>{const k=keyOf(u);const ph=(ST.pH[k]??ST.p)/100;return {...u,key:k,ph,W:u.pop/N,S:Math.sqrt(ph*(1-ph))};});
-  let nTot=0;
-  if(ST.target==='global'){
-    const n0=z*z*(ST.p/100)*(1-ST.p/100)/(d*d)*ST.deff, nG=n0/(1+(n0-1)/N);
-    const w=r=>ST.alloc==='prop'?r.pop:ST.alloc==='raiz'?Math.sqrt(r.pop):ST.alloc==='igual'?1:r.pop*r.S;
-    const sw=rows.reduce((s,r)=>s+w(r),0);
-    rows.forEach(r=>{r.nRaw=nG*w(r)/sw;}); nTot=nG;
-  } else {
-    rows.forEach(r=>{const n0=z*z*r.ph*(1-r.ph)/(d*d)*ST.deff;r.nRaw=n0/(1+(n0-1)/r.pop);});
-  }
-  rows.forEach(r=>{r.ns=Math.min(r.pop,Math.max(ST.min,Math.ceil(r.nRaw)));r.nField=Math.ceil(r.ns/resp);r.minHit=r.ns>Math.ceil(r.nRaw);
-    const fpc=Math.max(0,1-r.ns/r.pop); r.marg=z*Math.sqrt(r.ph*(1-r.ph)*ST.deff/r.ns*fpc);});
-  const V=rows.reduce((s,r)=>s+r.W*r.W*r.ph*(1-r.ph)*ST.deff/r.ns*Math.max(0,1-r.ns/r.pop),0);
-  const overall=z*Math.sqrt(V), net=rows.reduce((s,r)=>s+r.ns,0), field=rows.reduce((s,r)=>s+r.nField,0);
-  const cost=field*(ST.cost||0), enumDays=field/(ST.perday||1), days=Math.ceil(enumDays/(ST.team||1));
-  return {rows,N,z,net,field,overall,cost,enumDays,days,minHits:rows.filter(r=>r.minHit).length,nTot};
-}
-const ALLOC_PT={prop:'proporcional à população',raiz:'proporcional à raiz quadrada da população (Kish, 1965)',igual:'igual entre estratos',neyman:'óptima de Neyman (Neyman, 1934)'};
-const ALLOC_EN={prop:'proportional to population',raiz:'proportional to the square root of population (Kish, 1965)',igual:'equal across strata',neyman:'Neyman optimal allocation (Neyman, 1934)'};
-function calcStrata(){
-  if(!DATA) return;
-  const R=stratCompute();
-  if(R.error){$('st-results').innerHTML=`<div class="warn">${R.error}</div>`;return;}
-  const lvl=ST.level==='prov'?'províncias':'distritos', lvlEn=ST.level==='prov'?'provinces':'districts';
-  const scope=ST.level==='dist'&&ST.prov!=='*'?` da província de ${ST.prov}`:'', scopeEn=ST.level==='dist'&&ST.prov!=='*'?` of ${ST.prov} province`:'';
-  const H=R.rows.length, bad=R.rows.filter(r=>r.marg>0.10).length, maxM=Math.max(...R.rows.map(r=>r.marg));
-  const cf=fmt(ST.conf*100);
-  const pt=`A amostra foi estratificada por ${H} ${lvl}${scope}, com base na população do Censo 2017 (INE). ${ST.target==='global'?`Para estimar uma prevalência de ${fmt(ST.p)}% com margem de erro de ±${fmt(ST.d,1)} pontos percentuais e ${cf}% de confiança, com um efeito de desenho de ${fmt(ST.deff,1)}, calculou-se uma amostra total de ${fmt(Math.ceil(R.nTot))} entrevistas (Cochran, 1977), distribuída de forma ${ALLOC_PT[ST.alloc]}`:`Para que cada estrato tenha uma margem de erro de ±${fmt(ST.d,1)} pontos percentuais com ${cf}% de confiança e um efeito de desenho de ${fmt(ST.deff,1)}, calculou-se a amostra de cada estrato separadamente, com correcção para população finita (Cochran, 1977)`}${ST.min>0?`, com um mínimo de ${fmt(ST.min)} entrevistas por estrato`:''}. A amostra efectiva é de ${fmt(R.net)} entrevistas; considerando uma taxa de resposta de ${fmt(ST.resp)}%, planeiam-se ${fmt(R.field)} entrevistas. A margem de erro esperada para o conjunto é de ±${fmt(R.overall*100,1)} pontos percentuais${H>1?`, variando entre ±${fmt(Math.min(...R.rows.map(r=>r.marg))*100,1)} e ±${fmt(maxM*100,1)} nos estratos`:''}.`;
-  const en=`The sample was stratified by ${H} ${lvlEn}${scopeEn}, using population figures from the 2017 Census (INE). ${ST.target==='global'?`To estimate a prevalence of ${fmtEn(ST.p)}% with a margin of error of ±${fmtEn(ST.d,1)} percentage points at ${fmtEn(ST.conf*100)}% confidence and a design effect of ${fmtEn(ST.deff,1)}, a total sample of ${fmtEn(Math.ceil(R.nTot))} interviews was calculated (Cochran, 1977) and allocated ${ALLOC_EN[ST.alloc]}`:`So that each stratum achieves a margin of error of ±${fmtEn(ST.d,1)} percentage points at ${fmtEn(ST.conf*100)}% confidence with a design effect of ${fmtEn(ST.deff,1)}, each stratum's sample was calculated separately with a finite population correction (Cochran, 1977)`}${ST.min>0?`, with a minimum of ${fmtEn(ST.min)} interviews per stratum`:''}. The effective sample is ${fmtEn(R.net)} interviews; allowing for a ${fmtEn(ST.resp)}% response rate, ${fmtEn(R.field)} interviews are planned. The expected overall margin of error is ±${fmtEn(R.overall*100,1)} percentage points${H>1?`, ranging from ±${fmtEn(Math.min(...R.rows.map(r=>r.marg))*100,1)} to ±${fmtEn(maxM*100,1)} across strata`:''}.`;
-  const body=R.rows.map(r=>`<tr><td>${esc(r.n)}${ST.level==='dist'&&ST.prov==='*'?`<span class="tagc">${esc(r.p)}</span>`:''}${r.minHit?'<span class="tagc">mínimo</span>':''}</td>
-    <td class="num">${fmt(r.pop)}</td><td class="num">${fmt(r.W*100,1)}%</td>
-    <td><input type="number" min="1" max="99" step="1" value="${fmt(r.ph*100)}" data-ph="${esc(r.key)}" aria-label="Prevalência esperada em ${esc(r.n)}"></td>
-    <td class="num">${fmt(r.ns)}</td><td class="num"><b>${fmt(r.nField)}</b></td>
-    <td class="num${r.marg>0.10?' bad':''}">±${fmt(r.marg*100,1)}<span class="mbar"><i style="width:${Math.min(100,r.marg/0.2*100).toFixed(0)}%"></i></span></td></tr>`).join('');
-  $('st-results').innerHTML=`
-   <div class="kpis">
-    <div class="kpi main"><b>${fmt(R.field)}</b><small>entrevistas a planear</small></div>
-    <div class="kpi"><b>±${fmt(R.overall*100,1)}</b><small>p.p. de margem no total</small></div>
-    <div class="kpi"><b>${fmt(R.cost)}</b><small>MT de custo de campo</small></div>
-    <div class="kpi"><b>${fmt(R.days)}</b><small>dias com ${fmt(ST.team)} inquiridores</small></div>
-   </div>
-   ${bad?`<div class="warn">${bad} de ${H} estratos ficam com margem acima de ±10 p.p. Se quer resultados fiáveis em cada estrato, use "Margem em cada estrato", a alocação pela raiz quadrada ou um mínimo por estrato maior.</div>`:''}
-   ${R.minHits?`<div class="note">${R.minHits} estrato(s) subiram até ao mínimo de ${fmt(ST.min)} entrevistas.</div>`:''}
-   <div><div class="sec-t">Alocação por estrato · ${H} ${lvl}<span class="actions"><button type="button" class="btn ghost" id="st-csv">Descarregar CSV</button></span></div>
-    <div class="st-table"><table><thead><tr><th>Estrato</th><th>Pop. 2017</th><th>Peso</th><th>p (%)</th><th>Efectiva</th><th>A planear</th><th>Margem ±p.p.</th></tr></thead>
-    <tbody>${body}</tbody><tfoot><tr><td>Total</td><td class="num">${fmt(R.N)}</td><td class="num">100%</td><td></td><td class="num">${fmt(R.net)}</td><td class="num">${fmt(R.field)}</td><td class="num">±${fmt(R.overall*100,1)}</td></tr></tfoot></table></div>
-    <p class="note">Margem por estrato = z·√[p(1 − p)·deff / n · (1 − n/N)]. Margem total do estimador estratificado = z·√[Σ W²·p(1 − p)·deff / n · (1 − n/N)]. Orçamento: ${fmt(R.field)} entrevistas × ${fmt(ST.cost)} MT; ${fmt(R.enumDays,0)} dias-inquiridor a ${fmt(ST.perday)} entrevistas por dia.</p></div>
-   <div><div class="sec-t">Texto para o protocolo
-     <span style="display:flex;gap:8px;align-items:center"><span class="seg" role="group" aria-label="Idioma"><button type="button" data-sl="pt" aria-pressed="${ST.lang==='pt'}">PT</button><button type="button" data-sl="en" aria-pressed="${ST.lang==='en'}">EN</button></span><button type="button" class="btn" id="st-copy">Copiar</button></span></div>
-     <p class="proto" id="st-proto">${esc(ST.lang==='pt'?pt:en)}</p></div>
-   <div><div class="sec-t">Obras que inspiraram este cálculo</div><ul class="refs">${['cochran','kish','lohr','neyman'].map(k=>`<li>${REFS[k].f}</li>`).join('')}</ul></div>`;
-  $('st-results').querySelectorAll('[data-ph]').forEach(el=>el.addEventListener('change',()=>{const v=parseFloat(el.value);if(v>0&&v<100){ST.pH[el.dataset.ph]=v;}else delete ST.pH[el.dataset.ph];calcStrata();}));
-  $('st-results').querySelectorAll('[data-sl]').forEach(b=>b.addEventListener('click',()=>{ST.lang=b.dataset.sl;calcStrata();}));
-  $('st-copy').addEventListener('click',e=>copyText(e.currentTarget,()=>$('st-proto').textContent,$('st-proto')));
-  $('st-csv').addEventListener('click',()=>{
-    const head=['estrato','provincia','populacao_2017','peso','p_esperada','amostra_efectiva','a_planear','margem_pp'];
-    const lines=[head.join(';')].concat(R.rows.map(r=>[r.n,r.p,r.pop,(r.W).toFixed(4),(r.ph*100).toFixed(0),r.ns,r.nField,(r.marg*100).toFixed(2)].map(csvCell).join(';')));
-    download('amostralab-alocacao.csv',lines.join('\n'));
-  });
-}
+  initSearch(); window.AL.DATA=d; if(window.AL.onData) window.AL.onData(d);
+}).catch(()=>{$('q-results').innerHTML='<div class="warn">Não foi possível carregar os dados do Censo 2017. Recarregue a página.</div>';});
 
 /* ================= quick data search ================= */
 function initSearch(){
@@ -514,16 +409,8 @@ function renderSearch(){
   const max=Math.max(...list.map(x=>x.pop),1);
   $('q-results').innerHTML=list.length||summary?`<table><thead><tr><th>Distrito / cidade</th><th>Província</th><th class="num">População 2017</th><th class="num">% da província</th><th class="num">% do país</th><th></th></tr></thead><tbody>${summary}${list.slice(0,40).map(x=>{const pp=x.pop/DATA.provPop[x.p];return `<tr><td>${esc(x.n)}<span class="sub">${x.city?'Cidade / município':'Distrito'}${x.from?` · criado a partir de ${esc(x.from)}`:''}</span></td><td>${esc(x.p)}</td><td class="num">${fmt(x.pop)}<span class="share"><i style="width:${(x.pop/max*100).toFixed(0)}%"></i></span></td><td class="num">${fmt(pp*100,1)}%</td><td class="num">${fmt(x.pop/DATA.national*100,2)}%</td><td><button type="button" class="link" data-add="${esc('D:'+x.p+'|'+x.n)}" data-prov="${esc(x.p)}">+ Estrato</button></td></tr>`;}).join('')}</tbody></table>`:'<p class="note" style="padding:12px">Nenhum lugar com esse nome. Tente sem acentos ou só parte do nome.</p>';
   $('q-results').insertAdjacentHTML('afterbegin',`<div class="note" style="padding:10px 12px;border-bottom:1px solid var(--line)">${title}${list.length>40?' · a mostrar os 40 maiores':''}</div>`);
-  $('q-results').querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{
-    if(ST.level!=='dist'){ST.level='dist';ST.prov=b.dataset.prov;ST.sel=new Set();}
-    else if(ST.prov!=='*'&&ST.prov!==b.dataset.prov){ST.prov='*';}
-    ST.sel.add(b.dataset.add); ST.filter=''; $('st-search').value=''; syncSeg(); renderUnits(); calcStrata();
-    b.textContent='Adicionado'; document.getElementById('estratificacao').scrollIntoView({behavior:'smooth',block:'start'});
-  }));
-  $('q-results').querySelectorAll('[data-addprov]').forEach(b=>b.addEventListener('click',()=>{
-    ST.level='dist';ST.prov=b.dataset.addprov;selectAllInView();ST.filter='';$('st-search').value='';syncSeg();renderUnits();calcStrata();
-    document.getElementById('estratificacao').scrollIntoView({behavior:'smooth',block:'start'});
-  }));
+  $('q-results').querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{ if(window.AL.addStratum){window.AL.addStratum(b.dataset.add,b.dataset.prov);b.textContent='Adicionado';} }));
+  $('q-results').querySelectorAll('[data-addprov]').forEach(b=>b.addEventListener('click',()=>{ if(window.AL.addProvince) window.AL.addProvince(b.dataset.addprov); }));
 }
 
 /* ================= reproducible randomisation ================= */
@@ -563,5 +450,7 @@ function runRz(){
   $('rz-copy').addEventListener('click',e=>copyText(e.currentTarget,()=>$('rz-proto').textContent,$('rz-proto')));
   $('rz-csv').addEventListener('click',()=>download(`amostralab-sorteio-semente-${seed}.csv`,['unidade;estrato;grupo'].concat(units.map(u=>[u.name,u.stratum,labels[u.arm]].map(csvCell).join(';'))).join('\n')));
 }
+
+window.AL=Object.assign(window.AL||{},{normInv,tInv,fmt,fmtEn,esc,REFS,download,csvCell,copyText,mulberry32,norm});
 
 })();
