@@ -27,7 +27,7 @@ const D={
  sist:{n:'Sistemática',en:'systematic sampling',k:'SIS',
   def:'Escolhe-se um ponto de partida aleatório e depois uma unidade em cada k da lista, com k = N / n (intervalo de amostragem).',
   defEn:'a random starting point is chosen and every k-th unit of the list is then selected, with k = N/n (sampling interval)',
-  when:'Há uma lista ou um fluxo ordenado: registos, utentes à entrada, casas ao longo de uma rua.',
+  when:'Há uma lista ordenada ou um fluxo contínuo: registos, entradas sucessivas, casas ao longo de um percurso.',
   req:'Lista ordenada ou fluxo contínuo; N conhecido, pelo menos aproximadamente.',
   pro:['Muito fácil de aplicar no terreno','Se a lista estiver ordenada por uma variável relevante, funciona como estratificação implícita'],
   con:['Se a lista tiver um padrão que se repete de k em k, a amostra fica enviesada','Não há estimador exacto da variância; usa-se o da aleatória simples'],
@@ -41,34 +41,31 @@ const D={
   con:['Precisa de informação prévia para formar os estratos','Alocação não proporcional exige pesos na análise'],
   deff:'deff ≤ 1 com alocação proporcional',refs:['cochran','neyman','kish']},
  cong:{n:'Por conglomerados',en:'cluster sampling',k:'CON',
-  def:'Sorteiam-se grupos naturais (conglomerados), como aldeias, escolas ou áreas de enumeração, e inquirem-se as unidades dentro dos grupos sorteados.',
+  def:'Sorteiam-se grupos naturais (conglomerados), como localidades, instituições ou áreas de enumeração, e inquirem-se as unidades dentro dos grupos sorteados.',
   defEn:'natural groups (clusters) such as villages, schools or enumeration areas are randomly selected and units within the selected clusters are surveyed',
-  when:'Não há lista de pessoas mas há lista de grupos, ou a população está muito dispersa.',
+  when:'Não há lista de unidades individuais mas há lista de grupos, ou a população está muito dispersa.',
   req:'Lista de conglomerados; listagem das unidades só nos conglomerados sorteados.',
   pro:['Reduz custos de deslocação','Só é preciso listar unidades nos conglomerados sorteados'],
   con:['Menos precisa: unidades do mesmo grupo parecem-se (ICC)','Precisa de uma amostra maior: deff = 1 + (m − 1)·ICC'],
   deff:'deff = 1 + (m − 1)·ICC',refs:['kish','lohr']},
  multi:{n:'Multietápica com PPS',en:'multi-stage sampling with probability proportional to size (PPS)',k:'MUL',
-  def:'Selecção em etapas: primeiro áreas (unidades primárias) com probabilidade proporcional ao tamanho (PPS), depois um número fixo de agregados em cada área. Normalmente estratificada na primeira etapa.',
-  defEn:'selection in stages: primary sampling units (areas) are drawn with probability proportional to size (PPS), followed by a fixed number of households within each selected area, usually with stratification at the first stage',
-  when:'Inquéritos domiciliares grandes, provinciais ou nacionais. É o desenho do IDS/DHS e dos inquéritos do INE.',
-  req:'Cartografia de áreas de enumeração com o número de agregados; listagem de agregados nas áreas sorteadas.',
-  pro:['Viável à escala nacional sem lista de pessoas','PPS com número fixo de agregados torna a amostra autoponderada','Combina estratificação e conglomeração'],
+  def:'Selecção em etapas: primeiro áreas (unidades primárias) com probabilidade proporcional ao tamanho (PPS), depois um número fixo de unidades em cada área. Normalmente estratificada na primeira etapa.',
+  defEn:'selection in stages: primary sampling units (areas) are drawn with probability proportional to size (PPS), followed by a fixed number of units within each selected area, usually with stratification at the first stage',
+  when:'Inquéritos de grande escala, provinciais ou nacionais, sem lista de unidades individuais. É o desenho padrão dos grandes inquéritos por amostragem.',
+  req:'Lista de áreas (por exemplo áreas de enumeração) com o seu tamanho; listagem das unidades nas áreas sorteadas.',
+  pro:['Viável em grande escala sem lista de unidades individuais','PPS com número fixo de unidades por área torna a amostra autoponderada','Combina estratificação e conglomeração'],
   con:['A análise exige pesos e métodos para amostras complexas','deff típico entre 1,5 e 2,5','Mais etapas para documentar'],
   deff:'deff = 1 + (m − 1)·ICC, compensado em parte pela estratificação',refs:['kish','un2005','dhs2012','valliant']}
 };
-const UNIT={pessoa:['a pessoa','pessoas','person','people'],agregado:['o agregado familiar','agregados familiares','household','households'],escola:['a escola','escolas','school','schools'],us:['a unidade sanitária','unidades sanitárias','health facility','health facilities'],empresa:['a empresa ou negócio','empresas','business','businesses'],outra:['a unidade definida no estudo','unidades','unit','units']};
+const UNIT={pessoa:['a pessoa','pessoas','person','people'],agregado:['o agregado familiar','agregados familiares','household','households'],instituicao:['a instituição ou organização','instituições','institution','institutions'],outra:['a unidade definida no estudo','unidades','unit','units']};
 
 /* ---------------- state ---------------- */
-const EX={step:1,title:'Estimar a percentagem de raparigas de 13 a 19 anos que concluíram o ensino primário na província de Nampula, em 2027.',
- pop:'Raparigas de 13 a 19 anos residentes em agregados familiares da província de Nampula.',unit:'pessoa',
- incl:'Rapariga com 13 a 19 anos completos; residente habitual no agregado há pelo menos 6 meses; consentimento do encarregado e assentimento da rapariga (menores de 18 anos).',
- excl:'Raparigas que não conseguem responder por doença grave ou deficiência cognitiva severa; agregados não acessíveis por razões de segurança.',
- nmode:'censo',narea:'P:Nampula',npct:11,nval:'',frame:'areas',obj:'estimar',out:'prop',geo:'ampla',sub:'nao',design:'multi',
- p:50,src:'Sem estimativa prévia fiável; usa-se 50% (valor mais conservador).',sigma:15,src2:'',d:5,dMean:2,conf:0.95,resp:90,m:20,icc:0.06,stratify:true,
- cost:1200,perday:6,team:12,seed:20271101,lang:'pt',c:''};
+const EX={step:1,title:'',pop:'',unit:'pessoa',incl:'',excl:'',
+ nmode:'grande',narea:'N',npct:100,nval:'',frame:'lista',obj:'estimar',out:'prop',geo:'local',sub:'nao',design:'aas',
+ p:50,src:'',sigma:10,src2:'',d:5,dMean:1,conf:0.95,resp:90,m:15,icc:0.05,stratify:false,
+ cost:0,perday:6,team:10,seed:20260101,lang:'pt',c:''};
 const W=JSON.parse(JSON.stringify(EX));
-const ST={level:'dist',prov:'Nampula',sel:new Set(),pH:{},target:'global',alloc:'prop',min:20,filter:''};
+const ST={level:'prov',prov:'*',sel:new Set(),pH:{},target:'global',alloc:'prop',min:0,filter:''};
 let DATA=null;
 
 /* ---------------- helpers ---------------- */
@@ -86,7 +83,7 @@ function areaOptions(){
 function areaPop(v){if(!DATA)return 0;if(v==='N')return DATA.national;if(v.startsWith('P:'))return DATA.provPop[v.slice(2)]||0;const [p,n]=v.slice(2).split('|');const x=DATA.districts.find(d=>d.p===p&&d.n===n);return x?x.pop:0;}
 function areaName(v){if(v==='N')return 'Moçambique';if(v.startsWith('P:'))return 'província de '+v.slice(2);const [p,n]=v.slice(2).split('|');return `distrito de ${n} (${p})`;}
 function getN(){
-  if(isStrat()) { const s=strataUnits(); if(s.length) return Math.round(s.reduce((a,u)=>a+u.pop,0)*elig()); }
+  if(isStrat()&&W.nmode==='censo') { const s=strataUnits(); if(s.length) return Math.round(s.reduce((a,u)=>a+u.pop,0)*elig()); }
   if(W.nmode==='censo') return Math.round(areaPop(W.narea)*elig());
   if(W.nmode==='manual') return parseInt(W.nval,10)||0;
   return 0;
@@ -151,7 +148,7 @@ function calc(){
       const w=r=>ST.alloc==='prop'?r.Nh:ST.alloc==='raiz'?Math.sqrt(r.Nh):ST.alloc==='igual'?1:r.Nh*r.S;
       const sw=rows.reduce((s,r)=>s+w(r),0); rows.forEach(r=>{r.nRaw=nD*w(r)/sw;});
     } else rows.forEach(r=>{const a=z*z*r.ph*(1-r.ph)/(d*d);r.nRaw=a/(1+(a-1)/r.Nh)*deff;});
-    rows.forEach(r=>{r.ns=Math.min(Math.floor(r.Nh),Math.max(ST.min,Math.ceil(r.nRaw)));r.minHit=r.ns>Math.ceil(r.nRaw);
+    rows.forEach(r=>{r.ns=Math.min(Math.floor(r.Nh),Math.max(ST.min,1,Math.ceil(r.nRaw)));r.minHit=r.ns>Math.ceil(r.nRaw);
       r.nField=Math.ceil(r.ns/resp); if(isClu()){r.cl=Math.ceil(r.nField/W.m);r.nField=r.cl*W.m;}
       r.marg=prop?z*Math.sqrt(r.ph*(1-r.ph)*deff/r.ns*Math.max(0,1-r.ns/r.Nh)):null;});
     const V=prop?rows.reduce((s,r)=>s+r.W*r.W*r.ph*(1-r.ph)*deff/r.ns*Math.max(0,1-r.ns/r.Nh),0):0;
@@ -168,8 +165,8 @@ function calc(){
 
 /* ---------------- recommendation ---------------- */
 function recommend(){
-  if(W.frame==='nenhuma') return {d:'multi',why:'Sem base de amostragem, o caminho habitual é usar a cartografia de áreas de enumeração do INE como base da primeira etapa e listar os agregados nas áreas sorteadas. Isso conduz a um desenho multietápico.'};
-  if(W.frame==='areas') return (W.geo==='local'&&W.sub==='nao')?{d:'cong',why:'Tem lista de grupos, não de pessoas, e a área é pequena. Sortear conglomerados e inquirir dentro deles é o mais simples.'}:{d:'multi',why:'Tem lista de áreas, a população está dispersa'+(W.sub==='sim'?' e precisa de resultados por subgrupo':'')+'. O desenho multietápico estratificado com PPS é o padrão internacional para este caso (Nações Unidas, 2005; ICF, 2012).'};
+  if(W.frame==='nenhuma') return {d:'multi',why:'Sem base de amostragem, o caminho habitual é usar uma lista de áreas (por exemplo, as áreas de enumeração do censo) como base da primeira etapa e listar as unidades nas áreas sorteadas. Isso conduz a um desenho multietápico.'};
+  if(W.frame==='areas') return (W.geo==='local'&&W.sub==='nao')?{d:'cong',why:'Tem lista de grupos, não de pessoas, e a área é pequena. Sortear conglomerados e inquirir dentro deles é o mais simples.'}:{d:'multi',why:'Tem lista de áreas, a população está dispersa'+(W.sub==='sim'?' e precisa de resultados por subgrupo':'')+'. O desenho multietápico estratificado com PPS é o padrão internacional para este caso (Nações Unidas, 2005).'};
   if(W.sub==='sim') return {d:'estrat',why:'Tem lista completa e precisa de resultados fiáveis por subgrupo. A estratificação garante amostra suficiente em cada um.'};
   if(W.geo==='ampla') return {d:'estrat',why:'Tem lista completa mas a população está muito dispersa. Estratificar por área geográfica melhora a precisão e organiza o trabalho de campo.'};
   return {d:'aas',why:'Tem lista completa e a população é compacta. A aleatória simples é o desenho de referência; a sistemática é uma alternativa prática se a lista estiver ordenada.'};
@@ -258,7 +255,7 @@ function renderResult(R){
     <div class="kpi main"><b>${fmt(R.field)}</b><small>${U(1)} a seleccionar</small></div>
     <div class="kpi"><b>${R.clusters?fmt(R.clusters):fmt(R.net)}</b><small>${R.clusters?'conglomerados (áreas) a sortear':U(1)+' que se espera que respondam'}</small></div>
     <div class="kpi"><b>±${prop?fmt((R.rows?R.overall:R.d)*100,1)+' p.p.':fmt(R.d,2)}</b><small>margem de erro no total</small></div>
-    <div class="kpi"><b>${fmt(R.days)}</b><small>dias de campo · ${fmt(R.cost)} MT</small></div>
+    <div class="kpi"><b>${fmt(R.days)}</b><small>dias de campo · ${W.cost>0?fmt(R.cost)+' MT':'custo por definir'}</small></div>
    </div>
    ${R.warn?`<div class="warn">${R.warn}</div>`:''}
    <div><div class="sec-t">Do cálculo ao terreno</div>${stepsList(R)}</div>
@@ -312,16 +309,16 @@ function renderSelection(R){
       let cum=0, j=0; const sel=[];
       lines.forEach(x=>{const lo=cum;cum+=x.M;while(j<c&&start+j*I<cum&&start+j*I>=lo){sel.push(x);j++;}});
       const mm=W.design==='multi'?W.m:null;
-      tool=`<div class="st-table" style="max-height:320px"><table><thead><tr class="nocase"><th>Área sorteada</th><th>Agregados (M<sub>i</sub>)</th><th>π₁ = c·M<sub>i</sub>/M</th>${mm?'<th>π₂ = m/M<sub>i</sub></th><th>Peso</th>':''}</tr></thead><tbody>${sel.map(x=>{const p1=Math.min(1,c*x.M/M),p2=mm?Math.min(1,mm/x.M):1;return `<tr><td>${esc(x.name)}${c*x.M>=M?'<span class="tagc">certeza</span>':''}</td><td class="num">${fmt(x.M)}</td><td class="num">${fmt(p1,4)}</td>${mm?`<td class="num">${fmt(p2,4)}</td><td class="num">${fmt(1/(p1*p2),1)}</td>`:''}</tr>`;}).join('')}</tbody></table></div>
-      <p class="note">Total M = ${fmt(M)} agregados · intervalo I = M / c = ${fmt(I,2)} · início aleatório = ${fmt(start,2)} (semente ${W.seed}).${mm?` Com PPS e ${mm} agregados fixos por área, o peso é igual em todas as áreas, M/(c·m) = ${fmt(M/(c*mm),1)}: a amostra é autoponderada dentro do estrato.`:''}</p>`;
+      tool=`<div class="st-table" style="max-height:320px"><table><thead><tr class="nocase"><th>Área sorteada</th><th>Tamanho (M<sub>i</sub>)</th><th>π₁ = c·M<sub>i</sub>/M</th>${mm?'<th>π₂ = m/M<sub>i</sub></th><th>Peso</th>':''}</tr></thead><tbody>${sel.map(x=>{const p1=Math.min(1,c*x.M/M),p2=mm?Math.min(1,mm/x.M):1;return `<tr><td>${esc(x.name)}${c*x.M>=M?'<span class="tagc">certeza</span>':''}</td><td class="num">${fmt(x.M)}</td><td class="num">${fmt(p1,4)}</td>${mm?`<td class="num">${fmt(p2,4)}</td><td class="num">${fmt(1/(p1*p2),1)}</td>`:''}</tr>`;}).join('')}</tbody></table></div>
+      <p class="note">Total M = ${fmt(M)} unidades · intervalo I = M / c = ${fmt(I,2)} · início aleatório = ${fmt(start,2)} (semente ${W.seed}).${mm?` Com PPS e ${mm} unidades fixas por área, o peso é igual em todas as áreas, M/(c·m) = ${fmt(M/(c*mm),1)}: a amostra é autoponderada dentro do estrato.`:''}</p>`;
     }
     h+=`<ol class="proc">
-      <li><b>1.ª etapa: áreas.</b> ${R.rows?`Em cada um dos ${R.rows.length} estratos, sorteie o número de conglomerados da coluna "Conglom."`:`Sorteie ${fmt(R.clusters)} conglomerados`} ${W.design==='multi'?'com probabilidade proporcional ao tamanho (PPS sistemática), usando o número de agregados de cada área.':'por aleatória simples a partir da lista de conglomerados.'}</li>
-      <li><b>Listagem.</b> Nas áreas sorteadas, actualize a lista de todos os agregados antes do inquérito.</li>
+      <li><b>1.ª etapa: áreas.</b> ${R.rows?`Em cada um dos ${R.rows.length} estratos, sorteie o número de conglomerados da coluna "Conglom."`:`Sorteie ${fmt(R.clusters)} conglomerados`} ${W.design==='multi'?'com probabilidade proporcional ao tamanho (PPS sistemática), usando o tamanho de cada área.':'por aleatória simples a partir da lista de conglomerados.'}</li>
+      <li><b>Listagem.</b> Nas áreas sorteadas, actualize a lista de todas as unidades antes da recolha de dados.</li>
       <li><b>2.ª etapa: ${U(1)}.</b> Em cada área, seleccione ${fmt(W.m)} ${U(1)} por amostragem sistemática a partir da listagem.</li>
-      <li><b>Elegibilidade.</b> Aplique os critérios de inclusão e de exclusão no agregado. Se houver mais de uma pessoa elegível, inclua todas ou sorteie uma (e registe-o, porque altera os pesos).</li></ol>
+      <li><b>Elegibilidade.</b> Aplique os critérios de inclusão e de exclusão a cada unidade seleccionada. Se uma unidade contiver mais de um elemento elegível, inclua todos ou sorteie um (e registe-o, porque altera os pesos).</li></ol>
       <div class="subbox"><div class="sec-t">Simulador de selecção PPS sistemática</div>
-      <p class="note" style="margin-top:0">Cole a lista de áreas de enumeração de um estrato, com o número de agregados (nome ; agregados). O exemplo usa áreas fictícias.</p>
+      <p class="note" style="margin-top:0">Cole a lista de áreas (ou outros conglomerados) de um estrato, com o tamanho de cada uma (nome ; tamanho). O exemplo usa áreas fictícias.</p>
       <div class="row2"><textarea id="w-ea" class="short" spellcheck="false">${esc(eaText)}</textarea>
       <div>${seedField}<div class="field" style="max-width:220px"><label for="w-c">Áreas a sortear (c)</label><div class="ctl"><input type="number" id="w-c" min="1" step="1" value="${c}"></div></div></div></div>${tool}</div>
       ${weightBox(W.design==='multi'?'w = 1 / (π₁ · π₂) = M / (c · m)':'w = C / c (todos os inquiridos no conglomerado)','Na análise, declare os estratos, os conglomerados e os pesos (por exemplo svyset no Stata ou o pacote survey no R; Lumley, 2010).')}`;
@@ -339,23 +336,25 @@ function protocol(R,lang){
   const sec=[];
   const H=(t)=>`<h5>${t}</h5>`;
   if(pt){
-    sec.push(H('1. População do estudo')+`<p>${esc(W.title)}</p><p>A população-alvo do estudo é constituída por: ${esc(lc(W.pop))} A unidade de análise é ${U(0)}.</p><p><b>Critérios de inclusão:</b> ${esc(W.incl)}</p><p><b>Critérios de exclusão:</b> ${esc(W.excl)}</p>${R.N>0?`<p>O tamanho da população elegível foi estimado em ${fmt(R.N)} ${U(1)}${W.nmode==='censo'&&!strat?`, aplicando ${fmt(W.npct,1)}% à população da ${areaName(W.narea)} no Censo 2017 (INE)`:W.nmode==='censo'?`, aplicando ${fmt(W.npct,1)}% à população dos estratos no Censo 2017 (INE)`:''}.</p>`:''}`);
-    sec.push(H('2. Base de amostragem')+`<p>${W.frame==='lista'?'A base de amostragem é a lista completa das unidades da população-alvo, verificada quanto a duplicações e omissões antes do sorteio.':W.frame==='areas'?'A base de amostragem da primeira etapa é a lista de áreas de enumeração (ou outros conglomerados) com o respectivo número de agregados. Nas áreas seleccionadas, será feita uma listagem actualizada dos agregados, que servirá de base para a segunda etapa (Groves et al., 2009).':'Não existe uma lista prévia das unidades. Será usada a cartografia de áreas de enumeração do INE como base da primeira etapa, seguida da listagem completa dos agregados nas áreas seleccionadas (Nações Unidas, 2005).'}</p>`);
+    const T=(v,ph)=>v&&v.trim()?esc(v.trim()):`<mark>[${ph}]</mark>`;
+    sec.push(H('1. População do estudo')+`<p>${T(W.title,'objectivo do estudo')}</p><p>A população-alvo do estudo é constituída por: ${W.pop.trim()?esc(lc(W.pop)):'<mark>[definir a população-alvo]</mark>'} A unidade de análise é ${U(0)}.</p><p><b>Critérios de inclusão:</b> ${T(W.incl,'definir')}</p><p><b>Critérios de exclusão:</b> ${T(W.excl,'definir')}</p>${R.N>0?`<p>O tamanho da população elegível foi estimado em ${fmt(R.N)} ${U(1)}${W.nmode==='censo'&&!strat?`, aplicando ${fmt(W.npct,1)}% à população da ${areaName(W.narea)} no Censo 2017 (INE)`:W.nmode==='censo'?`, aplicando ${fmt(W.npct,1)}% à população dos estratos no Censo 2017 (INE)`:''}.</p>`:''}`);
+    sec.push(H('2. Base de amostragem')+`<p>${W.frame==='lista'?'A base de amostragem é a lista completa das unidades da população-alvo, verificada quanto a duplicações e omissões antes do sorteio.':W.frame==='areas'?'A base de amostragem da primeira etapa é a lista de áreas (ou outros conglomerados) com o respectivo tamanho. Nas áreas seleccionadas, será feita uma listagem actualizada das unidades, que servirá de base para a segunda etapa (Groves et al., 2009).':'Não existe uma lista prévia das unidades. Será usada uma lista de áreas (por exemplo, as áreas de enumeração do INE) como base da primeira etapa, seguida da listagem completa das unidades nas áreas seleccionadas (Nações Unidas, 2005).'}</p>`);
     sec.push(H('3. Desenho amostral')+`<p>Será usada uma amostragem probabilística ${x.n.toLowerCase()}${strat&&W.design==='multi'?', estratificada por '+lvl:''}: ${x.def.charAt(0).toLowerCase()+x.def.slice(1)} ${strat?`Os estratos são ${R.rows.length} ${lvl}${ST.level==='dist'&&ST.prov!=='*'?' da província de '+ST.prov:''}.`:''} A escolha justifica-se porque ${x.when.charAt(0).toLowerCase()+x.when.slice(1)}</p>`);
     let calc=`<p>O tamanho da amostra foi calculado para estimar ${prop?`uma proporção esperada de ${fmt(W.p)}% com uma margem de erro de ±${fmt(W.d,1)} pontos percentuais`:`uma média com uma margem de erro de ±${fmt(W.dMean,2)} unidades, assumindo um desvio-padrão de ${fmt(W.sigma,2)}`} e ${cf}% de confiança (Cochran, 1977), o que dá uma amostra base de ${Math.ceil(R.n0)}. ${(prop?W.src:W.src2)?`O valor esperado baseia-se em: ${esc(prop?W.src:W.src2)}. `:''}${R.N>0?`Aplicou-se a correcção para população finita (N = ${fmt(R.N)}), obtendo-se ${Math.ceil(R.nF)}. `:''}${isClu()?`Para ter em conta a conglomeração, aplicou-se um efeito de desenho de ${fmt(R.deff,2)}, calculado como 1 + (m − 1)·ICC com ${fmt(W.m)} ${U(1)} por conglomerado e um ICC de ${fmt(W.icc,2)} (Kish, 1965). `:''}Considerando uma taxa de resposta esperada de ${fmt(W.resp)}%, serão seleccionados ${fmt(R.field)} ${U(1)}${R.clusters?` em ${fmt(R.clusters)} conglomerados`:''}.</p>`;
     if(strat) calc+=`<p>A amostra foi distribuída pelos estratos de forma ${{prop:'proporcional à população',raiz:'proporcional à raiz quadrada da população (Kish, 1965)',igual:'igual',neyman:'óptima de Neyman (Neyman, 1934)'}[ST.alloc]}${ST.target==='estrato'&&prop?', com o objectivo de obter a margem indicada em cada estrato':''}${ST.min>0?`, com um mínimo de ${fmt(ST.min)} ${U(1)} por estrato`:''}. ${prop?`A margem de erro esperada é de ±${fmt(R.overall*100,1)} pontos percentuais para o total e varia entre ±${fmt(Math.min(...R.rows.map(r=>r.marg))*100,1)} e ±${fmt(Math.max(...R.rows.map(r=>r.marg))*100,1)} nos estratos.`:''} A alocação detalhada consta do Anexo.</p>`;
     sec.push(H('4. Tamanho da amostra')+calc);
-    sec.push(H('5. Procedimento de selecção')+`<p>${W.design==='aas'?`As unidades da lista serão numeradas de 1 a N e serão sorteados ${fmt(R.field)} números sem reposição, com um gerador pseudo-aleatório e a semente ${W.seed}, o que permite reproduzir o sorteio.`:W.design==='sist'?`Será aplicado um intervalo de amostragem k = N/n, com início aleatório gerado com a semente ${W.seed}.`:W.design==='estrat'?`Em cada estrato será feita uma selecção aleatória independente, com sementes registadas.`:`Na primeira etapa, ${W.design==='multi'?'as áreas serão seleccionadas com probabilidade proporcional ao número de agregados (PPS sistemática)':'os conglomerados serão sorteados por aleatória simples'}${strat?', de forma independente em cada estrato':''}, com a semente ${W.seed}. Na segunda etapa, serão seleccionados ${fmt(W.m)} ${U(1)} por amostragem sistemática a partir da listagem actualizada (ICF International, 2012).`} Não haverá substituição de unidades que não respondam.</p>`);
+    sec.push(H('5. Procedimento de selecção')+`<p>${W.design==='aas'?`As unidades da lista serão numeradas de 1 a N e serão sorteados ${fmt(R.field)} números sem reposição, com um gerador pseudo-aleatório e a semente ${W.seed}, o que permite reproduzir o sorteio.`:W.design==='sist'?`Será aplicado um intervalo de amostragem k = N/n, com início aleatório gerado com a semente ${W.seed}.`:W.design==='estrat'?`Em cada estrato será feita uma selecção aleatória independente, com sementes registadas.`:`Na primeira etapa, ${W.design==='multi'?'as áreas serão seleccionadas com probabilidade proporcional ao tamanho (PPS sistemática)':'os conglomerados serão sorteados por aleatória simples'}${strat?', de forma independente em cada estrato':''}, com a semente ${W.seed}. Na segunda etapa, serão seleccionados ${fmt(W.m)} ${U(1)} por amostragem sistemática a partir da listagem actualizada (ICF International, 2012).`} Não haverá substituição de unidades que não respondam.</p>`);
     sec.push(H('6. Ponderação e análise')+`<p>${W.design==='aas'||W.design==='sist'?'Como todas as unidades têm a mesma probabilidade de selecção, a amostra é autoponderada.':`Os pesos de desenho serão calculados como o inverso da probabilidade de selecção${W.design==='multi'?', w = 1/(π₁·π₂)':''}, ajustados pela não resposta. A análise terá em conta os estratos, os conglomerados e os pesos, usando métodos para amostras complexas (Lumley, 2010; Valliant et al., 2018).`} As estimativas serão apresentadas com intervalos de confiança de ${cf}%.</p>`);
   } else {
     const xe=x.en;
-    sec.push(H('1. Study population')+`<p>${esc(W.title)}</p><p>The target population is: ${esc(lc(W.pop))} The unit of analysis is the ${U(2)}.</p><p><b>Inclusion criteria:</b> ${esc(W.incl)}</p><p><b>Exclusion criteria:</b> ${esc(W.excl)}</p>${R.N>0?`<p>The eligible population was estimated at ${fmtEn(R.N)} ${U(3)}${W.nmode==='censo'?`, applying ${fmtEn(W.npct,1)}% to the 2017 Census population (INE)`:''}.</p>`:''}`);
-    sec.push(H('2. Sampling frame')+`<p>${W.frame==='lista'?'The sampling frame is the complete list of units in the target population, checked for duplicates and omissions before selection.':W.frame==='areas'?'The first-stage sampling frame is the list of enumeration areas (or other clusters) with their number of households. An updated household listing will be carried out in the selected areas and used as the second-stage frame (Groves et al., 2009).':'No prior list of units exists. The INE enumeration-area cartography will be used as the first-stage frame, followed by a full household listing in the selected areas (United Nations, 2005).'}</p>`);
+    const T=(v,ph)=>v&&v.trim()?esc(v.trim()):`<mark>[${ph}]</mark>`;
+    sec.push(H('1. Study population')+`<p>${T(W.title,'study objective')}</p><p>The target population is: ${W.pop.trim()?esc(lc(W.pop)):'<mark>[define the target population]</mark>'} The unit of analysis is the ${U(2)}.</p><p><b>Inclusion criteria:</b> ${T(W.incl,'define')}</p><p><b>Exclusion criteria:</b> ${T(W.excl,'define')}</p>${R.N>0?`<p>The eligible population was estimated at ${fmtEn(R.N)} ${U(3)}${W.nmode==='censo'?`, applying ${fmtEn(W.npct,1)}% to the 2017 Census population (INE)`:''}.</p>`:''}`);
+    sec.push(H('2. Sampling frame')+`<p>${W.frame==='lista'?'The sampling frame is the complete list of units in the target population, checked for duplicates and omissions before selection.':W.frame==='areas'?'The first-stage sampling frame is the list of areas (or other clusters) with their size. An updated listing of units will be carried out in the selected areas and used as the second-stage frame (Groves et al., 2009).':'No prior list of units exists. A list of areas (for example, census enumeration areas) will be used as the first-stage frame, followed by a full listing of units in the selected areas (United Nations, 2005).'}</p>`);
     sec.push(H('3. Sampling design')+`<p>A probability sample will be drawn using ${xe}${strat&&W.design==='multi'?', stratified by '+lvl:''}: ${x.defEn}.${strat?` Strata are ${R.rows.length} ${lvl}${ST.level==='dist'&&ST.prov!=='*'?' of '+ST.prov+' province':''}.`:''}</p>`);
     let calc=`<p>Sample size was calculated to estimate ${prop?`an expected proportion of ${fmtEn(W.p)}% with a margin of error of ±${fmtEn(W.d,1)} percentage points`:`a mean with a margin of error of ±${fmtEn(W.dMean,2)} units, assuming a standard deviation of ${fmtEn(W.sigma,2)}`} at ${cf}% confidence (Cochran, 1977), giving a base sample of ${Math.ceil(R.n0)}. ${(prop?W.src:W.src2)?`The expected value is based on: ${esc(prop?W.src:W.src2)}. `:''}${R.N>0?`A finite population correction was applied (N = ${fmtEn(R.N)}), giving ${Math.ceil(R.nF)}. `:''}${isClu()?`To account for clustering, a design effect of ${fmtEn(R.deff,2)} was applied, computed as 1 + (m − 1)·ICC with ${fmtEn(W.m)} ${U(3)} per cluster and an ICC of ${fmtEn(W.icc,2)} (Kish, 1965). `:''}Allowing for an expected response rate of ${fmtEn(W.resp)}%, ${fmtEn(R.field)} ${U(3)} will be selected${R.clusters?` in ${fmtEn(R.clusters)} clusters`:''}.</p>`;
     if(strat) calc+=`<p>The sample was allocated across strata ${{prop:'proportionally to population',raiz:'proportionally to the square root of population (Kish, 1965)',igual:'equally',neyman:'using Neyman optimal allocation (Neyman, 1934)'}[ST.alloc]}${ST.min>0?`, with a minimum of ${fmtEn(ST.min)} ${U(3)} per stratum`:''}. ${prop?`The expected margin of error is ±${fmtEn(R.overall*100,1)} percentage points overall, ranging from ±${fmtEn(Math.min(...R.rows.map(r=>r.marg))*100,1)} to ±${fmtEn(Math.max(...R.rows.map(r=>r.marg))*100,1)} across strata.`:''} The detailed allocation is given in the Annex.</p>`;
     sec.push(H('4. Sample size')+calc);
-    sec.push(H('5. Selection procedure')+`<p>${W.design==='aas'?`Units will be numbered 1 to N and ${fmtEn(R.field)} numbers drawn without replacement using a pseudo-random generator with seed ${W.seed}, so the draw can be reproduced.`:W.design==='sist'?`A sampling interval k = N/n will be applied with a random start generated with seed ${W.seed}.`:W.design==='estrat'?'An independent random selection will be made within each stratum, with recorded seeds.':`At the first stage, ${W.design==='multi'?'areas will be selected with probability proportional to their number of households (systematic PPS)':'clusters will be selected by simple random sampling'}${strat?', independently within each stratum':''}, using seed ${W.seed}. At the second stage, ${fmtEn(W.m)} ${U(3)} will be selected by systematic sampling from the updated listing (ICF International, 2012).`} Non-responding units will not be replaced.</p>`);
+    sec.push(H('5. Selection procedure')+`<p>${W.design==='aas'?`Units will be numbered 1 to N and ${fmtEn(R.field)} numbers drawn without replacement using a pseudo-random generator with seed ${W.seed}, so the draw can be reproduced.`:W.design==='sist'?`A sampling interval k = N/n will be applied with a random start generated with seed ${W.seed}.`:W.design==='estrat'?'An independent random selection will be made within each stratum, with recorded seeds.':`At the first stage, ${W.design==='multi'?'areas will be selected with probability proportional to size (systematic PPS)':'clusters will be selected by simple random sampling'}${strat?', independently within each stratum':''}, using seed ${W.seed}. At the second stage, ${fmtEn(W.m)} ${U(3)} will be selected by systematic sampling from the updated listing (ICF International, 2012).`} Non-responding units will not be replaced.</p>`);
     sec.push(H('6. Weighting and analysis')+`<p>${W.design==='aas'||W.design==='sist'?'As all units have the same selection probability, the sample is self-weighting.':`Design weights will be computed as the inverse of the selection probability${W.design==='multi'?', w = 1/(π₁·π₂)':''}, adjusted for non-response. Analysis will account for strata, clusters and weights using complex survey methods (Lumley, 2010; Valliant et al., 2018).`} Estimates will be reported with ${cf}% confidence intervals.</p>`);
   }
   return sec.join('');
@@ -384,7 +383,7 @@ function renderSummary(R){
   const row=(k,v,ok)=>`<div class="srow"><dt>${k}</dt><dd class="${ok===false?'miss':''}">${v}</dd></div>`;
   const N=getN();
   $('wz-sum').innerHTML=`<div class="sec-t">O seu estudo</div><dl class="sum">
-   ${row('População',W.pop?esc(W.pop.length>90?W.pop.slice(0,90)+'…':W.pop):'por definir',!!W.pop)}
+   ${row('População',W.pop.trim()?esc(W.pop.length>90?W.pop.slice(0,90)+'…':W.pop):'por definir',!!W.pop.trim())}
    ${row('N elegível',N>0?fmt(N):'desconhecido')}
    ${row('Inclusão / exclusão',(W.incl?'✓':'—')+' / '+(W.excl?'✓':'—'),!!(W.incl&&W.excl))}
    ${row('Base de amostragem',{lista:'Lista completa',areas:'Lista de áreas',nenhuma:'Sem lista'}[W.frame])}
@@ -393,7 +392,7 @@ function renderSummary(R){
    ${isStrat()?row('Estratos',`${strataUnits().length} ${ST.level==='prov'?'províncias':'distritos'}`):''}
    </dl>
    <div class="sum-n">${R.error?'<span class="note">'+R.error+'</span>':`<b>${fmt(R.field)}</b><span>${U(1)} a seleccionar${R.clusters?`<br>em ${fmt(R.clusters)} conglomerados`:''}</span>`}</div>
-   ${R.error?'':`<div class="note">${fmt(R.days)} dias de campo · ${fmt(R.cost)} MT</div>`}`;
+   ${R.error?'':`<div class="note">${fmt(R.days)} dias de campo · ${W.cost>0?fmt(R.cost)+' MT':'custo por definir'}</div>`}`;
 }
 
 /* ---------------- navigation ---------------- */
@@ -440,7 +439,7 @@ function init(){
   document.querySelectorAll('[data-wl]').forEach(b=>b.addEventListener('click',()=>{W.lang=b.dataset.wl;update();}));
   $('w-copy').addEventListener('click',e=>copyText(e.currentTarget,()=>$('w-proto').innerText,$('w-proto')));
   $('w-dl').addEventListener('click',()=>download('amostralab-seccao-amostragem.txt',$('w-proto').innerText));
-  $('wz-reset').addEventListener('click',()=>{Object.assign(W,{title:'',pop:'',incl:'',excl:'',src:'',src2:'',nmode:'grande',nval:'',step:1});['w-title','w-pop','w-incl','w-excl','w-src','w-src2'].forEach(id=>$(id).value='');syncChoices();go(1);});
+  $('wz-reset').addEventListener('click',()=>{Object.assign(W,JSON.parse(JSON.stringify(EX)));['w-unit'].forEach(id=>$(id).value=W.unit);['w-title','w-pop','w-incl','w-excl','w-src','w-src2'].forEach(id=>$(id).value='');syncChoices();go(1);});
   initStrataUI(); syncChoices(); go(1);
 }
 A.addStratum=(key,prov)=>{

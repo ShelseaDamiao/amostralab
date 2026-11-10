@@ -39,15 +39,14 @@ const REFS={
   donner:{c:'Donner e Klar, 2000',f:'Donner, A. e Klar, N. (2000). <i>Design and Analysis of Cluster Randomization Trials in Health Research</i>. Arnold.',u:'Efeito de desenho 1 + (m − 1)·ICC.',m:'Conglomerados'},
   bloom95:{c:'Bloom, 1995',f:'Bloom, H. S. (1995). Minimum detectable effects: A simple way to report the statistical power of experimental designs. <i>Evaluation Review</i>, 19(5), 547–556.',u:'Efeito mínimo detectável (MDES) e multiplicador t.',m:'MDES'},
   bloom05:{c:'Bloom, 2005',f:'Bloom, H. S. (2005). Randomizing groups to evaluate place-based programs. Em <i>Learning More from Social Experiments</i>. Russell Sage Foundation.',u:'MDES em desenhos por conglomerados com covariáveis.',m:'Conglomerados, MDES'},
-  dong:{c:'Dong e Maynard, 2013',f:'Dong, N. e Maynard, R. (2013). PowerUp!: A tool for calculating minimum detectable effect sizes and minimum required sample sizes. <i>Journal of Research on Educational Effectiveness</i>, 6(1), 24–67.',u:'Fórmulas de MDES e amostra mínima para avaliações em educação.',m:'Conglomerados, MDES'},
+  dong:{c:'Dong e Maynard, 2013',f:'Dong, N. e Maynard, R. (2013). PowerUp!: A tool for calculating minimum detectable effect sizes and minimum required sample sizes. <i>Journal of Research on Educational Effectiveness</i>, 6(1), 24–67.',u:'Fórmulas de MDES e de amostra mínima para avaliações de impacto.',m:'Conglomerados, MDES'},
   duflo:{c:'Duflo et al., 2007',f:'Duflo, E., Glennerster, R. e Kremer, M. (2007). Using randomization in development economics research: A toolkit. <i>Handbook of Development Economics</i>, vol. 4, 3895–3962.',u:'Poder estatístico em avaliações de impacto em países em desenvolvimento.',m:'Conglomerados, MDES'},
-  kraft:{c:'Kraft, 2020',f:'Kraft, M. A. (2020). Interpreting effect sizes of education interventions. <i>Educational Researcher</i>, 49(4), 241–253.',u:'Referências para interpretar efeitos em educação (pequeno &lt; 0,05; médio 0,05–0,20; grande ≥ 0,20 DP).',m:'MDES'}
 };
 
 /* ---------- modules ---------- */
 const MODS=[
 { id:'prevalencia', k:'Inquérito', n:'Prevalência', d:'Estimar uma percentagem com margem de erro',
-  lead:'Para inquéritos que querem estimar uma proporção, como a percentagem de raparigas que concluíram a 7.ª classe.',
+  lead:'Para estimar uma proporção na população: a percentagem de unidades com uma determinada característica.',
   fields:[
     {k:'p',l:'Prevalência esperada',u:'%',def:50,min:1,max:99,step:1,range:true,h:'Sem informação prévia, use 50%: dá a amostra mais conservadora.'},
     {k:'d',l:'Margem de erro (±)',u:'p.p.',def:5,min:0.5,max:20,step:0.5,range:true,h:'Em pontos percentuais. ±5 p.p. é o padrão em inquéritos nacionais.'},
@@ -57,9 +56,9 @@ const MODS=[
     {k:'resp',l:'Taxa de resposta esperada',u:'%',def:90,min:30,max:100,step:1,range:true}
   ],
   presets:[
-    {n:'Inquérito domiciliar por conglomerados',v:{p:50,d:5,conf:0.95,N:0,deff:2,resp:90}},
-    {n:'Utentes de uma unidade sanitária',v:{p:30,d:5,conf:0.95,N:2500,deff:1,resp:95}},
-    {n:'Amostra aleatória simples',v:{p:50,d:5,conf:0.95,N:0,deff:1,resp:100}}
+    {n:'Aleatória simples, população grande',v:{p:50,d:5,conf:0.95,N:0,deff:1,resp:100}},
+    {n:'Por conglomerados (deff 2)',v:{p:50,d:5,conf:0.95,N:0,deff:2,resp:90}},
+    {n:'População finita (N = 2 500)',v:{p:50,d:5,conf:0.95,N:2500,deff:1,resp:90}}
   ],
   refs:['cochran','kish','lohr'],
   compute(v){
@@ -82,8 +81,8 @@ const MODS=[
   },
   sens(v){return {k:'d',xs:range(1,15,0.5),xl:'Margem de erro (p.p.)',yl:'Entrevistas',fx:x=>fmt(x,1),fy:y=>fmt(y)};}
 },
-{ id:'media', k:'Inquérito', n:'Média', d:'Estimar um valor médio, como rendimento ou pontuação',
-  lead:'Para estimar a média de uma variável contínua, como o rendimento mensal do agregado ou a pontuação num teste de leitura.',
+{ id:'media', k:'Inquérito', n:'Média', d:'Estimar o valor médio de uma variável contínua',
+  lead:'Para estimar a média de uma variável contínua na população, com uma margem de erro na unidade da própria variável.',
   fields:[
     {k:'sigma',l:'Desvio-padrão esperado',u:'unidades',def:15,min:0.01,step:0.5,h:'De um estudo anterior ou piloto. Uma regra prática: amplitude esperada ÷ 4.'},
     {k:'d',l:'Margem de erro (±)',u:'unidades',def:2,min:0.01,step:0.5,h:'Na mesma unidade da variável.'},
@@ -93,9 +92,9 @@ const MODS=[
     {k:'resp',l:'Taxa de resposta esperada',u:'%',def:90,min:30,max:100,step:1,range:true}
   ],
   presets:[
-    {n:'Pontuação de leitura (0–100)',v:{sigma:15,d:2,conf:0.95,N:0,deff:2,resp:90}},
-    {n:'Rendimento mensal (MT)',v:{sigma:8000,d:1000,conf:0.95,N:0,deff:1.8,resp:85}},
-    {n:'Altura de crianças < 5 anos (cm)',v:{sigma:9,d:1,conf:0.95,N:0,deff:1.5,resp:92}}
+    {n:'Margem de 0,1 desvio-padrão',v:{sigma:1,d:0.1,conf:0.95,N:0,deff:1,resp:90}},
+    {n:'Margem de 0,2 desvio-padrão',v:{sigma:1,d:0.2,conf:0.95,N:0,deff:1,resp:90}},
+    {n:'Por conglomerados (deff 2)',v:{sigma:1,d:0.1,conf:0.95,N:0,deff:2,resp:90}}
   ],
   refs:['cochran','kish','lohr'],
   compute(v){
@@ -118,7 +117,7 @@ const MODS=[
   sens(v){const s=v.d/10;return {k:'d',xs:range(+(v.d*0.4).toFixed(4),v.d*2.5,s),xl:'Margem de erro (unidades)',yl:'Entrevistas',fx:x=>fmt(x,2),fy:y=>fmt(y)};}
 },
 { id:'duas-proporcoes', k:'Comparação', n:'Duas proporções', d:'Detectar uma diferença entre grupos (sim/não)',
-  lead:'Para ensaios ou comparações em que o resultado é binário, como concluir ou não o ano lectivo.',
+  lead:'Para ensaios ou comparações em que o resultado é binário (sim ou não).',
   fields:[
     {k:'p1',l:'Proporção no grupo de controlo',u:'%',def:40,min:1,max:99,step:1,range:true},
     {k:'p2',l:'Proporção esperada na intervenção',u:'%',def:50,min:1,max:99,step:1,range:true,h:'A diferença entre os dois grupos é o efeito que quer conseguir detectar.'},
@@ -130,9 +129,9 @@ const MODS=[
     {k:'att',l:'Atrito esperado',u:'%',def:10,min:0,max:60,step:1,range:true,h:'Participantes que se perdem até ao inquérito final.'}
   ],
   presets:[
-    {n:'Conclusão escolar: 40% → 50%',v:{p1:40,p2:50,alpha:0.05,sides:2,power:0.8,k:1,deff:1,att:10}},
-    {n:'Uso de contraceptivos: 25% → 32%',v:{p1:25,p2:32,alpha:0.05,sides:2,power:0.8,k:1,deff:1.5,att:15}},
-    {n:'Partos institucionais: 60% → 70%',v:{p1:60,p2:70,alpha:0.05,sides:2,power:0.9,k:1,deff:1.3,att:5}}
+    {n:'Diferença de 10 p.p. (40% → 50%)',v:{p1:40,p2:50,alpha:0.05,sides:2,power:0.8,k:1,deff:1,att:10}},
+    {n:'Diferença de 5 p.p. (20% → 25%)',v:{p1:20,p2:25,alpha:0.05,sides:2,power:0.8,k:1,deff:1,att:10}},
+    {n:'Resultado raro (5% → 10%)',v:{p1:5,p2:10,alpha:0.05,sides:2,power:0.8,k:1,deff:1,att:10}}
   ],
   refs:['fleiss','duflo'],
   compute(v){
@@ -158,7 +157,7 @@ const MODS=[
   sens(v){const up=v.p2>v.p1;const xs=up?range(Math.min(v.p1+2,99),Math.min(v.p1+30,99),1):range(Math.max(1,v.p1-30),Math.max(1,v.p1-2),1);return {k:'p2',xs,xl:'Proporção na intervenção (%)',yl:'Participantes',fx:x=>fmt(x),fy:y=>fmt(y)};}
 },
 { id:'duas-medias', k:'Comparação', n:'Duas médias', d:'Detectar uma diferença num resultado contínuo',
-  lead:'Para ensaios em que o resultado é contínuo, como a pontuação num teste. Inclui o ajuste pela linha de base, que reduz a amostra.',
+  lead:'Para ensaios em que o resultado é contínuo. Inclui o ajuste pela linha de base, que reduz a amostra.',
   fields:[
     {k:'delta',l:'Diferença a detectar',u:'unidades',def:5,min:0.01,step:0.5,h:'Diferença entre as médias dos dois grupos, na unidade do resultado.'},
     {k:'sd',l:'Desvio-padrão do resultado',u:'unidades',def:15,min:0.01,step:0.5},
@@ -170,9 +169,9 @@ const MODS=[
     {k:'att',l:'Atrito esperado',u:'%',def:10,min:0,max:60,step:1,range:true}
   ],
   presets:[
-    {n:'Teste de leitura com linha de base',v:{delta:5,sd:15,alpha:0.05,sides:2,power:0.8,k:1,rho:0.6,att:10}},
-    {n:'Peso ao nascer (g)',v:{delta:100,sd:500,alpha:0.05,sides:2,power:0.8,k:1,rho:0,att:5}},
-    {n:'Rendimento de negócios de mulheres (MT)',v:{delta:1500,sd:6000,alpha:0.05,sides:2,power:0.8,k:1,rho:0.4,att:15}}
+    {n:'Efeito pequeno (d = 0,2)',v:{delta:0.2,sd:1,alpha:0.05,sides:2,power:0.8,k:1,rho:0,att:10}},
+    {n:'Efeito médio (d = 0,5)',v:{delta:0.5,sd:1,alpha:0.05,sides:2,power:0.8,k:1,rho:0,att:10}},
+    {n:'Efeito grande (d = 0,8)',v:{delta:0.8,sd:1,alpha:0.05,sides:2,power:0.8,k:1,rho:0,att:10}}
   ],
   refs:['chow','cohen','borm'],
   compute(v){
@@ -195,21 +194,21 @@ const MODS=[
   },
   sens(v){return {k:'delta',xs:range(+(v.delta*0.4).toFixed(4),v.delta*2.5,v.delta/10),xl:'Diferença a detectar (unidades)',yl:'Participantes',fx:x=>fmt(x,1),fy:y=>fmt(y)};}
 },
-{ id:'conglomerados', k:'Avaliação de impacto', n:'RCT por conglomerados', d:'Escolas, aldeias ou unidades sanitárias aleatorizadas',
-  lead:'Quando se aleatorizam grupos inteiros, como escolas, a semelhança entre alunos da mesma escola (ICC) aumenta a amostra necessária.',
+{ id:'conglomerados', k:'Avaliação de impacto', n:'RCT por conglomerados', d:'Grupos inteiros aleatorizados',
+  lead:'Quando se aleatorizam grupos inteiros em vez de indivíduos, a semelhança entre unidades do mesmo grupo (ICC) aumenta a amostra necessária.',
   fields:[
-    {k:'d',l:'Efeito mínimo a detectar (MDES)',u:'DP',def:0.2,min:0.02,max:1.5,step:0.01,range:true,h:'Em desvios-padrão. Em educação, 0,1 a 0,2 DP já é um efeito relevante.'},
-    {k:'icc',l:'Correlação intraclasse (ICC)',u:'ρ',def:0.2,min:0,max:0.6,step:0.01,range:true,h:'Aprendizagem em escolas: 0,15 a 0,35. Saúde em comunidades: 0,01 a 0,10.'},
-    {k:'m',l:'Participantes por conglomerado',u:'por escola',def:20,min:2,step:1},
+    {k:'d',l:'Efeito mínimo a detectar (MDES)',u:'DP',def:0.2,min:0.02,max:1.5,step:0.01,range:true,h:'Em desvios-padrão. Segundo Cohen (1988), 0,2 é pequeno, 0,5 médio e 0,8 grande.'},
+    {k:'icc',l:'Correlação intraclasse (ICC)',u:'ρ',def:0.2,min:0,max:0.6,step:0.01,range:true,h:'Varia com o indicador, tipicamente entre 0,01 e 0,30. Sem estimativa publicada, use 0,05 e veja a sensibilidade.'},
+    {k:'m',l:'Participantes por conglomerado',u:'por conglomerado',def:20,min:2,step:1},
     {k:'r2',l:'Variância explicada por covariáveis',u:'R²',def:0.4,min:0,max:0.9,step:0.05,range:true,h:'Com um teste de linha de base, R² de 0,3 a 0,6 é comum. Use 0 se não houver.'},
     {k:'alpha',l:'Nível de significância (α, bilateral)',sel:ALPHA,def:0.05},
     {k:'power',l:'Poder estatístico',sel:POWER,def:0.8},
     {k:'att',l:'Atrito dentro do conglomerado',u:'%',def:10,min:0,max:60,step:1,range:true}
   ],
   presets:[
-    {n:'Aprendizagem em escolas primárias',v:{d:0.2,icc:0.2,m:20,r2:0.4,alpha:0.05,power:0.8,att:10}},
-    {n:'Saúde comunitária (aldeias)',v:{d:0.25,icc:0.05,m:25,r2:0,alpha:0.05,power:0.8,att:10}},
-    {n:'Grupos de poupança de mulheres',v:{d:0.25,icc:0.1,m:15,r2:0.2,alpha:0.05,power:0.8,att:15}}
+    {n:'ICC baixo (0,02)',v:{d:0.2,icc:0.02,m:20,r2:0,alpha:0.05,power:0.8,att:10}},
+    {n:'ICC moderado (0,10)',v:{d:0.2,icc:0.1,m:20,r2:0,alpha:0.05,power:0.8,att:10}},
+    {n:'ICC alto (0,25), com linha de base',v:{d:0.2,icc:0.25,m:20,r2:0.4,alpha:0.05,power:0.8,att:10}}
   ],
   refs:['hayes','donner','bloom05','dong','duflo'],
   compute(v){
@@ -237,10 +236,10 @@ const MODS=[
   sens(v){return {k:'icc',xs:range(0.01,0.4,0.01),xl:'ICC',yl:'Conglomerados por braço',fx:x=>fmt(x,2),fy:y=>fmt(y)};}
 },
 { id:'mdes', k:'Modo inverso', n:'Efeito mínimo detectável', d:'Tenho N conglomerados. O que consigo detectar?',
-  lead:'Quando o orçamento já fixa o número de escolas ou aldeias, este módulo diz qual o menor efeito que o estudo consegue detectar.',
+  lead:'Quando o orçamento já fixa o número de conglomerados, este módulo diz qual o menor efeito que o estudo consegue detectar.',
   fields:[
-    {k:'J',l:'Total de conglomerados',u:'escolas',def:60,min:4,step:2},
-    {k:'m',l:'Participantes por conglomerado',u:'por escola',def:20,min:2,step:1},
+    {k:'J',l:'Total de conglomerados',u:'conglomerados',def:60,min:4,step:2},
+    {k:'m',l:'Participantes por conglomerado',u:'por conglomerado',def:20,min:2,step:1},
     {k:'icc',l:'Correlação intraclasse (ICC)',u:'ρ',def:0.2,min:0,max:0.6,step:0.01,range:true},
     {k:'r2',l:'Variância explicada por covariáveis',u:'R²',def:0.4,min:0,max:0.9,step:0.05,range:true},
     {k:'P',l:'Conglomerados no tratamento',u:'%',def:50,min:10,max:90,step:5,range:true},
@@ -249,17 +248,17 @@ const MODS=[
     {k:'att',l:'Atrito dentro do conglomerado',u:'%',def:10,min:0,max:60,step:1,range:true}
   ],
   presets:[
-    {n:'60 escolas, 20 alunas por escola',v:{J:60,m:20,icc:0.2,r2:0.4,P:50,alpha:0.05,power:0.8,att:10}},
-    {n:'30 aldeias, 25 agregados',v:{J:30,m:25,icc:0.05,r2:0,P:50,alpha:0.05,power:0.8,att:10}},
-    {n:'100 escolas, 3 braços (1/3 tratamento)',v:{J:100,m:15,icc:0.2,r2:0.4,P:35,alpha:0.05,power:0.8,att:10}}
+    {n:'60 conglomerados × 20',v:{J:60,m:20,icc:0.2,r2:0.4,P:50,alpha:0.05,power:0.8,att:10}},
+    {n:'30 conglomerados × 25',v:{J:30,m:25,icc:0.05,r2:0,P:50,alpha:0.05,power:0.8,att:10}},
+    {n:'100 conglomerados, 1/3 no tratamento',v:{J:100,m:15,icc:0.2,r2:0.4,P:35,alpha:0.05,power:0.8,att:10}}
   ],
-  refs:['bloom95','bloom05','dong','kraft'],
+  refs:['bloom95','bloom05','dong','cohen'],
   compute(v){
     const mE=v.m*(1-v.att/100), P=v.P/100;
     if(!(v.J>=4)) return {error:'São precisos pelo menos 4 conglomerados.'};
     if(mE<1) return {error:'Com este atrito sobra menos de um participante por conglomerado.'};
     const df=v.J-2, M=tInv(1-v.alpha/2,df)+tInv(v.power,df), comp=(v.icc+(1-v.icc)/mE)*(1-v.r2), se=Math.sqrt(comp/(P*(1-P)*v.J)), mdes=M*se;
-    const interp=mdes<0.05?'Muito sensível: detecta efeitos pequenos segundo Kraft (2020).':mdes<0.2?'Detecta efeitos médios em educação (0,05 a 0,20 DP segundo Kraft, 2020). Boa sensibilidade.':mdes<0.35?'Só detecta efeitos grandes (≥ 0,20 DP). Muitas intervenções eficazes em educação ficariam abaixo deste limiar.':'Pouca sensibilidade: o estudo só detectaria efeitos muito grandes. Aumente o número de conglomerados.';
+    const interp=mdes<0.2?'Detecta efeitos pequenos (abaixo de 0,2 DP, segundo Cohen, 1988). Boa sensibilidade.':mdes<0.5?'Detecta efeitos pequenos a médios (0,2 a 0,5 DP, segundo Cohen, 1988). Efeitos menores ficarão por detectar.':mdes<0.8?'Só detecta efeitos médios a grandes (0,5 a 0,8 DP). Considere mais conglomerados.':'Pouca sensibilidade: só detectaria efeitos muito grandes. Aumente o número de conglomerados.';
     return {main:mdes, mainTxt:fmt(mdes,2), label:'desvios-padrão: efeito mínimo detectável', sub:interp, warn:v.J<10?'Com menos de 10 conglomerados as estimativas de poder são pouco fiáveis.':'',
       steps:[
         {l:'Multiplicador M',n:`t(${fmt(1-v.alpha/2,3)}; ${df}) + t(${fmt(v.power,2)}; ${df}) graus de liberdade`,v:M,dec:3,bar:false},
@@ -417,7 +416,7 @@ function renderSearch(){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const RZ={lang:'pt'};
 (function initRz(){
-  const ex=[];['Angoche','Monapo','Mogovolas'].forEach(dn=>{for(let i=1;i<=8;i++) ex.push(`EP ${dn} ${String(i).padStart(2,'0')}; ${dn}`);});
+  const ex=[];['A','B','C'].forEach(dn=>{for(let i=1;i<=8;i++) ex.push(`Unidade ${dn}${String(i).padStart(2,'0')}; Estrato ${dn}`);});
   $('rz-list').value=ex.join('\n'); $('rz-seed').value=20261117;
   ['rz-list','rz-seed','rz-arms'].forEach(id=>$(id).addEventListener('input',runRz));
   runRz();
