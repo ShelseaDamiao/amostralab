@@ -8,6 +8,7 @@ O AmostraLab calcula a amostra, distribui-a pelas províncias e distritos, sorte
 
 | Ferramenta | Para quê |
 | --- | --- |
+| **Assistente de amostragem (6 passos)** | População-alvo, critérios de inclusão e exclusão, base de amostragem, objectivo, escolha entre 5 desenhos probabilísticos (aleatória simples, sistemática, estratificada, conglomerados, multietápica com PPS), parâmetros explicados, selecção reprodutível com semente, pesos amostrais, secção de amostragem do protocolo em PT e EN e lista de verificação |
 | Prevalência e média | Inquéritos: margem de erro, população finita, efeito de desenho, não resposta |
 | Duas proporções e duas médias | Comparar grupos, com ajuste pela linha de base (ANCOVA) |
 | RCT por conglomerados | Escolas, aldeias ou unidades sanitárias aleatorizadas (ICC, R², correcção t) |

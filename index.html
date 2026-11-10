@@ -16,7 +16,7 @@
 <div class="wrap">
   <header class="top">
     <div class="brand"><b>Amostra<span>Lab</span></b><small>ComuniDados Moz</small></div>
-    <nav aria-label="Secções"><a href="#calculadora">Calculadora</a><a href="#estratificacao">Estratificação</a><a href="#dados">Dados</a><a href="#aleatorizacao">Aleatorização</a><a href="#fontes">Fontes</a></nav>
+    <nav aria-label="Secções"><a href="#assistente">Assistente</a><a href="#ferramentas">Ferramentas avançadas</a><a href="#dados">Dados</a><a href="#fontes">Fontes</a><a href="#glossario">Glossário</a></nav>
     <span class="tag">Versão beta</span>
   </header>
 </div>
@@ -24,23 +24,200 @@
 <div class="hero">
   <div class="hero-in">
     <div>
-      <h1>Quantas pessoas precisa o seu estudo?</h1>
-      <p>O AmostraLab calcula o tamanho da amostra, distribui-a pelas províncias e distritos de Moçambique, sorteia unidades de forma reprodutível e escreve a justificação para o protocolo. Os cálculos inspiram-se nos métodos clássicos de amostragem e de avaliação de impacto.</p>
+      <h1>Vai precisar de uma amostra?</h1>
+      <p>Antes de calcular, defina quem quer estudar, como os vai encontrar e como os vai sortear. O AmostraLab guia-o por essas decisões, do objectivo do estudo até à secção de amostragem do protocolo, com amostragens probabilísticas que permitem generalizar para a população.</p>
+      <div class="hero-cta"><a class="btn" href="#assistente">Começar o assistente</a><a class="btn ghost" href="#ferramentas">Ir directo às fórmulas</a></div>
     </div>
-    <aside class="zcard" aria-label="Valores críticos da normal">
-      <h3>Valores de z usados</h3>
-      <table class="num">
-        <tr><th>Confiança 90% · α = 0,10</th><td>1,645</td></tr>
-        <tr><th>Confiança 95% · α = 0,05</th><td>1,960</td></tr>
-        <tr><th>Confiança 99% · α = 0,01</th><td>2,576</td></tr>
-        <tr><th>Poder 80% · z<sub>β</sub></th><td>0,842</td></tr>
-        <tr><th>Poder 90% · z<sub>β</sub></th><td>1,282</td></tr>
-      </table>
+    <aside class="zcard" aria-label="Os seis passos">
+      <h3>Os seis passos</h3>
+      <ol class="mini-steps"><li>Definir população, elegibilidade e base de amostragem</li><li>Escolher o objectivo e o indicador</li><li>Escolher o tipo de amostragem</li><li>Definir margem, confiança e não resposta</li><li>Obter a amostra e sorteá-la</li><li>Gerar a secção do protocolo</li></ol>
     </aside>
   </div>
 </div>
 
 <div class="wrap">
+  <section class="wz" id="assistente">
+    <div class="sec-head"><div><span class="kicker">Assistente de amostragem probabilística</span><h2>Desenhe a amostra do seu estudo, passo a passo</h2>
+      <p>Antes de calcular um número, é preciso saber quem se quer estudar e como se vai seleccionar. O assistente acompanha-o nas decisões que qualquer comissão científica ou de ética vai pedir, e no fim escreve a secção de amostragem do protocolo.</p></div>
+      <button type="button" class="btn ghost" id="wz-reset">Começar do zero</button></div>
+
+    <ol class="stepper" id="wz-steps">
+      <li><button type="button" data-go="1"><span>1</span>Antes de calcular</button></li>
+      <li><button type="button" data-go="2"><span>2</span>Objectivo</button></li>
+      <li><button type="button" data-go="3"><span>3</span>Tipo de amostragem</button></li>
+      <li><button type="button" data-go="4"><span>4</span>Parâmetros</button></li>
+      <li><button type="button" data-go="5"><span>5</span>Amostra e selecção</button></li>
+      <li><button type="button" data-go="6"><span>6</span>Protocolo</button></li>
+    </ol>
+
+    <div class="wz-grid">
+      <div class="panel wz-main">
+
+        <!-- STEP 1 -->
+        <div class="wz-step" data-step="1">
+          <h3>Antes de calcular: quem quer estudar?</h3>
+          <p class="lead">Uma amostra representa uma população. Se a população não estiver bem definida, nenhum cálculo a salva. Responda a estas perguntas; os campos já trazem um exemplo, que pode substituir.</p>
+          <div class="fields">
+            <div class="field"><label for="w-title">Objectivo do estudo, numa frase</label><input class="search" id="w-title" type="text"><div class="h">Diga o que quer saber, sobre quem, onde e quando.</div></div>
+            <div class="field"><label for="w-pop">População-alvo</label><textarea class="short" id="w-pop"></textarea><div class="h">O conjunto completo de unidades sobre o qual quer tirar conclusões. Seja preciso no tempo e no espaço.</div></div>
+            <div class="field"><label for="w-unit">Unidade de análise</label><div class="ctl"><select id="w-unit">
+              <option value="pessoa">Pessoa</option><option value="agregado">Agregado familiar</option><option value="escola">Escola</option><option value="us">Unidade sanitária</option><option value="empresa">Empresa ou negócio</option><option value="outra">Outra</option></select></div></div>
+            <div class="row2">
+              <div class="field"><label for="w-incl">Critérios de inclusão</label><textarea class="short" id="w-incl"></textarea><div class="h">Características que uma unidade <b>tem de ter</b> para pertencer à população.</div></div>
+              <div class="field"><label for="w-excl">Critérios de exclusão</label><textarea class="short" id="w-excl"></textarea><div class="h">Unidades que pertencem à população mas <b>não podem participar</b>, por razões éticas, práticas ou de segurança.</div></div>
+            </div>
+            <div class="field"><label>Tamanho da população elegível (N)</label>
+              <div class="segf" id="w-nmode"><button type="button" data-v="censo">Estimar com o Censo 2017</button><button type="button" data-v="manual">Sei o número</button><button type="button" data-v="grande">Desconhecido ou muito grande</button></div>
+              <div id="w-n-censo" class="subbox">
+                <div class="row2">
+                  <div><label for="w-n-area" class="note">Área geográfica</label><select id="w-n-area" class="search"></select></div>
+                  <div><label for="w-n-pct" class="note">% da população que cumpre os critérios</label><input type="number" id="w-n-pct" class="search" min="0.1" max="100" step="0.1"></div>
+                </div>
+                <div class="h">Ex.: raparigas de 13 a 19 anos são cerca de 10 a 12% da população. Use uma fonte (IDS, IOF, projecções do INE) e cite-a.</div>
+              </div>
+              <div id="w-n-manual" class="subbox"><input type="number" id="w-n-val" class="search" min="1" step="1" placeholder="Ex.: 2 400 utentes registados"></div>
+              <div class="h" id="w-n-out"></div>
+            </div>
+            <div class="field"><label>Tem uma base de amostragem?</label>
+              <div class="h" style="margin:0 0 6px">A base de amostragem é a lista (ou mapa) a partir da qual se sorteiam as unidades. Ela determina que desenhos são possíveis.</div>
+              <div class="choice" id="w-frame">
+                <button type="button" data-v="lista"><b>Sim, uma lista de todas as unidades</b><span>Ex.: registo de alunas, lista de utentes, cadastro de membros.</span></button>
+                <button type="button" data-v="areas"><b>Só uma lista de grupos ou áreas</b><span>Ex.: lista de escolas, aldeias ou áreas de enumeração do INE, sem a lista de pessoas.</span></button>
+                <button type="button" data-v="nenhuma"><b>Não tenho lista</b><span>Será preciso construir uma, por exemplo listando agregados no terreno.</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="wz-step" data-step="2">
+          <h3>O que quer medir?</h3>
+          <p class="lead">O objectivo decide a fórmula. Este assistente trata de estudos descritivos, que estimam um valor na população. Para comparar grupos ou avaliar o impacto de uma intervenção, use as ferramentas avançadas mais abaixo.</p>
+          <div class="fields">
+            <div class="field"><label>Objectivo principal</label>
+              <div class="choice" id="w-obj">
+                <button type="button" data-v="estimar"><b>Estimar um valor na população</b><span>Quantos, que percentagem, qual a média. Ex.: % de raparigas que concluíram o primário.</span></button>
+                <button type="button" data-v="comparar"><b>Comparar grupos ou avaliar impacto</b><span>Ex.: a intervenção aumentou a conclusão escolar? Ensaios e avaliações de impacto.</span></button>
+              </div>
+              <div class="warn" id="w-obj-warn" hidden>Para comparações e avaliações de impacto, o cálculo depende do poder estatístico e do efeito a detectar. Use os módulos <a href="#calculadora">Duas proporções, Duas médias, RCT por conglomerados ou Efeito mínimo detectável</a>. Pode continuar aqui para desenhar a amostra descritiva da linha de base.</div>
+            </div>
+            <div class="field"><label>Tipo de indicador principal</label>
+              <div class="choice two-col" id="w-out">
+                <button type="button" data-v="prop"><b>Proporção (sim / não)</b><span>Ex.: concluiu o primário, tem acesso a água potável, foi vacinada.</span></button>
+                <button type="button" data-v="media"><b>Média (valor contínuo)</b><span>Ex.: rendimento mensal, pontuação num teste, idade ao casamento.</span></button>
+              </div>
+            </div>
+            <div class="field"><label>Abrangência geográfica</label>
+              <div class="choice three-col" id="w-geo">
+                <button type="button" data-v="local"><b>Uma localidade ou instituição</b><span>Uma escola, um bairro, um hospital.</span></button>
+                <button type="button" data-v="distrito"><b>Um distrito ou cidade</b><span>Várias localidades próximas.</span></button>
+                <button type="button" data-v="ampla"><b>Uma província ou mais</b><span>População dispersa por grandes distâncias.</span></button>
+              </div>
+            </div>
+            <div class="field"><label>Precisa de resultados fiáveis para subgrupos geográficos?</label>
+              <div class="segf" id="w-sub"><button type="button" data-v="nao">Não, só para o total</button><button type="button" data-v="sim">Sim, para cada província ou distrito</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="wz-step" data-step="3">
+          <h3>Tipo de amostragem probabilística</h3>
+          <p class="lead">Numa amostragem probabilística, cada unidade da população tem uma probabilidade de selecção <b>conhecida e maior que zero</b>. É isso que permite generalizar os resultados para a população e calcular a margem de erro (inferência baseada no desenho). Escolha o desenho; a recomendação tem em conta as suas respostas.</p>
+          <div id="w-rec"></div>
+          <div class="designs" id="w-designs"></div>
+          <details class="np">
+            <summary>E as amostragens não probabilísticas?</summary>
+            <p>Amostragem por conveniência, por quotas, bola de neve ou intencional são úteis em estudos exploratórios, qualitativos ou com populações difíceis de alcançar. Mas como a probabilidade de selecção é desconhecida, não permitem calcular margens de erro nem generalizar para a população com base no desenho. Por isso este assistente não as inclui.</p>
+          </details>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="wz-step" data-step="4">
+          <h3>Parâmetros do cálculo</h3>
+          <p class="lead" id="w-par-lead"></p>
+          <div class="fields">
+            <div class="row2" id="w-par-prop">
+              <div class="field"><label for="w-p">Prevalência esperada <span class="u">%</span></label><div class="ctl"><input type="range" id="w-p-r" min="1" max="99" step="1"><input type="number" class="sm" id="w-p" min="1" max="99" step="1"></div><div class="h">Valor que espera encontrar. Sem informação prévia, 50% dá a amostra máxima (mais conservadora).</div></div>
+              <div class="field"><label for="w-src">Fonte deste valor</label><input class="search" id="w-src" type="text"><div class="h">Estudo anterior, piloto ou inquérito nacional. A comissão vai perguntar.</div></div>
+            </div>
+            <div class="row2" id="w-par-mean">
+              <div class="field"><label for="w-sigma">Desvio-padrão esperado <span class="u">unidades</span></label><div class="ctl"><input type="number" id="w-sigma" min="0.01" step="0.5"></div><div class="h">De um estudo anterior. Regra prática: amplitude esperada ÷ 4.</div></div>
+              <div class="field"><label for="w-src2">Fonte deste valor</label><input class="search" id="w-src2" type="text"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="w-d">Margem de erro (±) <span class="u" id="w-d-u">p.p.</span></label><div class="ctl"><input type="range" id="w-d-r" min="1" max="15" step="0.5"><input type="number" class="sm" id="w-d" min="0.1" step="0.5"></div></div>
+              <div class="field"><label for="w-conf">Nível de confiança</label><div class="ctl"><select id="w-conf"><option value="0.9">90%</option><option value="0.95">95%</option><option value="0.99">99%</option></select></div></div>
+            </div>
+            <div class="explain" id="w-d-explain"></div>
+            <div class="field"><label for="w-resp">Taxa de resposta esperada <span class="u">%</span></label><div class="ctl"><input type="range" id="w-resp-r" min="40" max="100" step="1"><input type="number" class="sm" id="w-resp" min="30" max="100" step="1"></div><div class="h">Parte das unidades seleccionadas que vai efectivamente responder. Em inquéritos domiciliares em Moçambique, 85 a 95% é comum.</div></div>
+
+            <div class="subbox" id="w-par-clu">
+              <div class="sec-t">Conglomerados</div>
+              <div class="row2">
+                <div class="field"><label for="w-m">Unidades inquiridas por conglomerado <span class="u">m</span></label><div class="ctl"><input type="number" id="w-m" min="1" step="1"></div><div class="h">Ex.: 20 agregados por área de enumeração, como no IDS.</div></div>
+                <div class="field"><label for="w-icc">Correlação intraclasse <span class="u">ICC</span></label><div class="ctl"><input type="range" id="w-icc-r" min="0" max="0.4" step="0.01"><input type="number" class="sm" id="w-icc" min="0" max="0.9" step="0.01"></div><div class="h">Indicadores de saúde e demografia: 0,02 a 0,10. Educação e acesso a serviços: 0,10 a 0,30.</div></div>
+              </div>
+              <div class="explain" id="w-deff-out"></div>
+              <label class="chk" id="w-strat-wrap"><input type="checkbox" id="w-stratify"> Estratificar a primeira etapa (por província ou distrito)</label>
+            </div>
+
+            <div class="subbox" id="w-strata">
+              <div class="sec-t">Estratos</div>
+              <div class="field"><label>Nível dos estratos</label><div class="segf" id="st-level"><button type="button" data-v="prov">Províncias</button><button type="button" data-v="dist">Distritos</button></div></div>
+              <div class="field" id="st-prov-wrap"><label for="st-prov">Província</label><div class="ctl"><select id="st-prov"></select></div></div>
+              <div class="field"><label for="st-search">Estratos incluídos</label>
+                <input class="search" id="st-search" type="search" placeholder="Filtrar por nome…" autocomplete="off">
+                <div class="units" id="st-units"></div>
+                <div class="unit-tools"><span id="st-count"></span><span><button type="button" class="link" id="st-all">Todos</button> · <button type="button" class="link" id="st-none">Nenhum</button></span></div>
+              </div>
+              <div class="field"><label>Objectivo de precisão</label><div class="segf" id="st-target"><button type="button" data-v="global">Margem para o total</button><button type="button" data-v="estrato">Margem em cada estrato</button></div><div class="h" id="st-target-h"></div></div>
+              <div class="field"><label>Alocação entre estratos</label><div class="segf" id="st-alloc"><button type="button" data-v="prop">Proporcional</button><button type="button" data-v="raiz">Raiz quadrada</button><button type="button" data-v="igual">Igual</button><button type="button" data-v="neyman">Neyman</button></div><div class="h" id="st-alloc-h"></div></div>
+              <div class="field"><label for="st-min">Mínimo por estrato <span class="u">unidades</span></label><div class="ctl"><input type="number" id="st-min" min="0" step="5"></div></div>
+            </div>
+
+            <div class="subbox">
+              <div class="sec-t">Orçamento de campo (opcional)</div>
+              <div class="row3">
+                <div><label for="w-cost" class="note">Custo por entrevista (MT)</label><input type="number" id="w-cost" min="0" step="50" class="search"></div>
+                <div><label for="w-perday" class="note">Entrevistas por inquiridor/dia</label><input type="number" id="w-perday" min="1" step="1" class="search"></div>
+                <div><label for="w-team" class="note">Inquiridores</label><input type="number" id="w-team" min="1" step="1" class="search"></div>
+              </div>
+            </div>
+          </div>
+          <div class="preview" id="w-preview" aria-live="polite"></div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="wz-step" data-step="5">
+          <h3>A sua amostra e como seleccioná-la</h3>
+          <div id="w-result"></div>
+          <div id="w-select"></div>
+        </div>
+
+        <!-- STEP 6 -->
+        <div class="wz-step" data-step="6">
+          <h3>Secção de amostragem do protocolo</h3>
+          <p class="lead">Texto gerado a partir das suas respostas, organizado como numa proposta de investigação. Reveja, complete e cite as fontes dos parâmetros.</p>
+          <div class="sec-t">Texto<span style="display:flex;gap:8px;align-items:center"><span class="seg" role="group" aria-label="Idioma"><button type="button" data-wl="pt">PT</button><button type="button" data-wl="en">EN</button></span><button type="button" class="btn ghost" id="w-dl">Descarregar .txt</button><button type="button" class="btn" id="w-copy">Copiar</button></span></div>
+          <div class="proto doc" id="w-proto"></div>
+          <div class="sec-t" style="margin-top:22px">Lista de verificação antes de submeter</div>
+          <ul class="check" id="w-check"></ul>
+          <div class="sec-t" style="margin-top:22px">Referências citadas</div>
+          <ul class="refs" id="w-refs"></ul>
+        </div>
+
+        <div class="wz-nav"><button type="button" class="btn ghost" id="wz-prev">Anterior</button><span class="note" id="wz-pos"></span><button type="button" class="btn" id="wz-next">Seguinte</button></div>
+      </div>
+
+      <aside class="panel wz-sum" id="wz-sum" aria-label="Resumo do estudo"></aside>
+    </div>
+  </section>
+
+  <div class="blk adv" id="ferramentas">
+    <div class="sec-head"><div><span class="kicker">Ferramentas avançadas</span><h2>Calculadoras para estudos comparativos e avaliação de impacto</h2>
+      <p>Para quem já conhece o desenho do estudo: comparação de proporções e de médias, ensaios aleatorizados por conglomerados e efeito mínimo detectável, com sensibilidade e texto para o protocolo.</p></div></div>
+  </div>
   <main class="app" id="calculadora">
     <div class="rail" role="group" aria-label="Tipo de estudo">
       <div class="lbl">Tipo de estudo</div>
@@ -49,44 +226,6 @@
     <div class="panel" id="inputs"></div>
     <div class="panel res" id="results" aria-live="polite"></div>
   </main>
-
-  <!-- ===== Estratificação ===== -->
-  <section class="blk" id="estratificacao">
-    <div class="sec-head"><div><span class="kicker">Novo</span><h2>Estratificação por província e distrito</h2>
-      <p>Escolha os estratos, defina a precisão e o método de alocação. A população de cada estrato vem do Censo 2017. Veja quantas entrevistas fazer em cada lugar, a margem de erro que cada estrato consegue e quanto custa o trabalho de campo.</p></div></div>
-    <div class="two">
-      <div class="panel" id="st-inputs">
-        <div class="fields">
-          <div class="field"><label>Nível dos estratos</label><div class="segf" id="st-level"><button type="button" data-v="prov">Províncias</button><button type="button" data-v="dist">Distritos</button></div></div>
-          <div class="field" id="st-prov-wrap"><label for="st-prov">Província</label><div class="ctl"><select id="st-prov"></select></div></div>
-          <div class="field"><label for="st-search">Estratos incluídos</label>
-            <input class="search" id="st-search" type="search" placeholder="Filtrar por nome…" autocomplete="off">
-            <div class="units" id="st-units"></div>
-            <div class="unit-tools"><span id="st-count"></span><span><button type="button" class="link" id="st-all">Todos</button> · <button type="button" class="link" id="st-none">Nenhum</button></span></div>
-          </div>
-          <div class="field"><label>Objectivo de precisão</label><div class="segf" id="st-target"><button type="button" data-v="global">Margem para o total</button><button type="button" data-v="estrato">Margem em cada estrato</button></div>
-            <div class="h" id="st-target-h"></div></div>
-          <div class="field"><label>Método de alocação</label><div class="segf" id="st-alloc"><button type="button" data-v="prop">Proporcional</button><button type="button" data-v="raiz">Raiz quadrada</button><button type="button" data-v="igual">Igual</button><button type="button" data-v="neyman">Neyman</button></div>
-            <div class="h" id="st-alloc-h"></div></div>
-          <div class="row2">
-            <div class="field"><label for="st-p">Prevalência esperada <span class="u">%</span></label><div class="ctl"><input type="number" id="st-p" min="1" max="99" step="1"></div></div>
-            <div class="field"><label for="st-d">Margem de erro (±) <span class="u">p.p.</span></label><div class="ctl"><input type="number" id="st-d" min="0.5" max="20" step="0.5"></div></div>
-            <div class="field"><label for="st-conf">Confiança</label><div class="ctl"><select id="st-conf"><option value="0.9">90%</option><option value="0.95">95%</option><option value="0.99">99%</option></select></div></div>
-            <div class="field"><label for="st-deff">Efeito de desenho <span class="u">deff</span></label><div class="ctl"><input type="number" id="st-deff" min="1" max="6" step="0.1"></div></div>
-            <div class="field"><label for="st-resp">Taxa de resposta <span class="u">%</span></label><div class="ctl"><input type="number" id="st-resp" min="30" max="100" step="1"></div></div>
-            <div class="field"><label for="st-min">Mínimo por estrato <span class="u">entrev.</span></label><div class="ctl"><input type="number" id="st-min" min="0" step="5"></div></div>
-          </div>
-          <div class="field"><label>Orçamento de campo</label>
-            <div class="row2">
-              <div><label for="st-cost" class="note">Custo por entrevista (MT)</label><input type="number" id="st-cost" min="0" step="50" class="search"></div>
-              <div><label for="st-perday" class="note">Entrevistas por inquiridor por dia</label><input type="number" id="st-perday" min="1" step="1" class="search"></div>
-              <div><label for="st-team" class="note">Inquiridores no terreno</label><input type="number" id="st-team" min="1" step="1" class="search"></div>
-            </div></div>
-        </div>
-      </div>
-      <div class="panel res" id="st-results" aria-live="polite"><p class="note">A carregar os dados do Censo 2017…</p></div>
-    </div>
-  </section>
 
   <!-- ===== Dados ===== -->
   <section class="blk" id="dados">
@@ -116,19 +255,6 @@
     </div>
   </section>
 
-  <section class="blk" id="conceito">
-    <h2>O que torna o AmostraLab diferente</h2>
-    <p class="lead">As calculadoras comuns devolvem um número sem explicar de onde vem. O AmostraLab foi pensado para quem tem de defender esse número perante uma equipa, um doador ou uma comissão de ética.</p>
-    <div class="ideas">
-      <div class="idea"><span class="ix">Cadeia de ajustes</span><h3>Do n₀ ao terreno</h3><p>Cada ajuste aparece em separado: população finita, efeito de desenho, não resposta e atrito. Fica claro quanto cada decisão custa em entrevistas.</p></div>
-      <div class="idea"><span class="ix">Estratificação</span><h3>Moçambique por dentro</h3><p>161 distritos e cidades com a população do Censo 2017. Quatro métodos de alocação, mínimo por estrato e a margem que cada estrato realmente consegue.</p></div>
-      <div class="idea"><span class="ix">Orçamento</span><h3>Quanto custa e quantos dias</h3><p>Com o custo por entrevista e o tamanho da equipa, a plataforma estima o orçamento e os dias de trabalho de campo.</p></div>
-      <div class="idea"><span class="ix">Protocolo</span><h3>Justificação pronta, em PT e EN</h3><p>Gera o parágrafo do cálculo da amostra, da alocação e do sorteio, com os valores usados e as citações, pronto a colar.</p></div>
-      <div class="idea"><span class="ix">Modo inverso</span><h3>Tenho 60 escolas. O que consigo detectar?</h3><p>Quando o orçamento fixa a amostra, calcula o efeito mínimo detectável e compara-o com efeitos típicos em educação.</p></div>
-      <div class="idea"><span class="ix">Transparência</span><h3>Sorteio auditável</h3><p>A aleatorização com semente pública permite que qualquer pessoa repita o sorteio e confirme o resultado.</p></div>
-    </div>
-  </section>
-
   <section class="blk" id="fontes">
     <h2>Inspiração, créditos e dados</h2>
     <div class="inspire">
@@ -148,6 +274,11 @@
     <h2>Glossário</h2>
     <p class="lead">Os termos que aparecem na plataforma, em linguagem simples.</p>
     <dl class="gloss">
+      <div><dt>População-alvo</dt><dd>O conjunto completo de pessoas ou unidades sobre o qual se quer tirar conclusões, definido no tempo e no espaço.</dd></div>
+      <div><dt>Base de amostragem</dt><dd>A lista ou o mapa de onde se sorteiam as unidades. Unidades que faltam na base nunca podem ser seleccionadas (erro de cobertura).</dd></div>
+      <div><dt>Amostragem probabilística</dt><dd>Cada unidade tem uma probabilidade de selecção conhecida e maior que zero. Só assim se pode generalizar com margem de erro.</dd></div>
+      <div><dt>PPS</dt><dd>Probabilidade proporcional ao tamanho: áreas com mais agregados têm mais hipótese de ser sorteadas. Com um número fixo de agregados por área, todos acabam com a mesma probabilidade.</dd></div>
+      <div><dt>Peso amostral</dt><dd>O inverso da probabilidade de selecção: quantas pessoas da população cada inquirido representa.</dd></div>
       <div><dt>Margem de erro</dt><dd>Quanto a estimativa pode afastar-se do valor real. ±5 p.p. numa prevalência de 40% significa entre 35% e 45%.</dd></div>
       <div><dt>Efeito de desenho (deff)</dt><dd>Quanto a amostra por conglomerados perde de precisão face a um sorteio simples. Um deff de 2 duplica a amostra necessária.</dd></div>
       <div><dt>Estrato</dt><dd>Subgrupo da população, como uma província, onde se sorteia em separado. Garante que cada parte do país fica representada.</dd></div>
@@ -165,8 +296,8 @@
     <h2>Roteiro do produto</h2>
     <p class="lead">O que já existe e o que vem a seguir.</p>
     <div class="road">
-      <div class="now"><small>Disponível</small><b>Calcular e justificar</b><ul><li>6 módulos clássicos</li><li>Sensibilidade e modo inverso</li><li>Texto para protocolo</li></ul></div>
-      <div class="now"><small>Disponível</small><b>Desenho amostral</b><ul><li>Estratos por província e distrito</li><li>4 métodos de alocação</li><li>Orçamento e sorteio com semente</li></ul></div>
+      <div class="now"><small>Disponível</small><b>Assistente guiado</b><ul><li>População, elegibilidade e base</li><li>5 desenhos probabilísticos explicados</li><li>Selecção com semente e secção do protocolo</li></ul></div>
+      <div class="now"><small>Disponível</small><b>Desenho amostral</b><ul><li>Estratos por província e distrito</li><li>PPS sistemática e pesos</li><li>Calculadoras de poder e MDES</li></ul></div>
       <div><small>A seguir</small><b>Do cálculo ao terreno</b><ul><li>Selecção PPS de áreas de enumeração</li><li>Exportar para KoboToolbox e SurveyCTO</li><li>Projecções populacionais do INE</li></ul></div>
       <div><small>Depois</small><b>Comunidade</b><ul><li>Biblioteca aberta de ICC e deff</li><li>Validação por simulação Monte Carlo</li><li>Projectos guardados em equipa</li></ul></div>
     </div>
@@ -178,5 +309,6 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/wizard.js"></script>
 </body>
 </html>
